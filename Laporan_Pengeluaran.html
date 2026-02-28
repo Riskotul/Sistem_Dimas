@@ -41,7 +41,7 @@
   
   <div class="bg-blue-50 p-4 rounded shadow">
     <p class="text-gray-500 text-sm">Total Pengeluaran</p>
-    <p class="text-xl font-bold">Rp 5.400.000</p>
+    <p id="totalPengeluaran" class="text-xl font-bold">Rp 5.400.000</p>
   </div>
 
   <div class="bg-blue-50 p-4 rounded shadow">
@@ -58,10 +58,11 @@
 
 <!-- Tombol Tambah -->
 <div class="mt-4 flex justify-between">
-    <button class="px-8 py-3 bg-gradient-to-r from-blue-600 to-green-500 text-white rounded-full shadow-lg hover:scale-105 transition">
-      + Tambah Pengeluaran
-    </button>
-  </div>
+  <button onclick="openTambahModal()" 
+    class="px-8 py-3 bg-gradient-to-r from-blue-600 to-green-500 text-white rounded-full shadow-lg hover:scale-105 transition">
+    + Tambah Pengeluaran
+  </button>
+</div>
 
 <!-- Tabel Pengeluaran -->
 <div class="bg-white rounded shadow p-4 overflow-x-auto mt-8">
@@ -77,7 +78,7 @@
 </tr>
 </thead>
 
-<tbody>
+<tbody id="tabelPengeluaran">
 <tr>
   <td class="border px-3 py-2">08 Feb 2026</td>
   <td class="border px-3 py-2">Pengadaan Buku</td>
@@ -118,6 +119,128 @@
 
 </main>
 </div>
+
+<!-- ================= MODAL TAMBAH ================= -->
+<div id="modalTambah" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-50">
+
+  <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl p-6">
+
+    <h3 class="text-xl font-bold mb-4">Tambah Pengeluaran</h3>
+
+    <div class="space-y-4">
+
+      <div>
+        <label class="block text-sm font-semibold mb-1">Tanggal</label>
+        <input type="date" id="tanggal"
+          class="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300">
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1">Kategori</label>
+        <select id="kategori"
+          class="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300">
+          <option>Pengeluaran Pendidikan</option>
+          <option>Pengeluaran Sarana</option>
+          <option>ATK</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1">Keterangan</label>
+        <input type="text" id="keterangan"
+          class="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300">
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1">Jumlah</label>
+        <input type="number" id="jumlah"
+          class="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300">
+      </div>
+
+    </div>
+
+    <div class="flex justify-end mt-6 space-x-3">
+      <button onclick="closeTambahModal()" 
+      class="px-4 py-2 bg-gray-300 rounded-lg">Batal</button>
+
+      <button onclick="simpanPengeluaran()" 
+      class="px-4 py-2 bg-blue-600 text-white rounded-lg">
+        Simpan
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+
+let totalPengeluaran = 5400000;
+
+function openTambahModal(){
+  document.getElementById("modalTambah").classList.remove("hidden");
+  document.getElementById("modalTambah").classList.add("flex");
+}
+
+function closeTambahModal(){
+  document.getElementById("modalTambah").classList.add("hidden");
+  document.getElementById("modalTambah").classList.remove("flex");
+}
+
+function formatRupiah(angka){
+  return "Rp " + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+
+function formatTanggal(tgl){
+  let date = new Date(tgl);
+  return date.toLocaleDateString("id-ID", { day:'2-digit', month:'short', year:'numeric' });
+}
+
+function simpanPengeluaran(){
+
+  let tanggal = document.getElementById("tanggal").value;
+  let kategori = document.getElementById("kategori").value;
+  let keterangan = document.getElementById("keterangan").value;
+  let jumlah = parseInt(document.getElementById("jumlah").value);
+
+  if(!tanggal || !keterangan || !jumlah){
+    alert("Harap isi semua data!");
+    return;
+  }
+
+  let tabel = document.getElementById("tabelPengeluaran");
+
+  let row = `
+    <tr>
+      <td class="border px-3 py-2">${formatTanggal(tanggal)}</td>
+      <td class="border px-3 py-2">${kategori}</td>
+      <td class="border px-3 py-2">${keterangan}</td>
+      <td class="border px-3 py-2">${formatRupiah(jumlah)}</td>
+      <td class="border px-3 py-2 space-x-2">
+        <button class="bg-yellow-400 px-2 py-1 rounded text-xs">Edit</button>
+        <button class="bg-red-500 text-white px-2 py-1 rounded text-xs">Hapus</button>
+      </td>
+    </tr>
+  `;
+
+  tabel.innerHTML += row;
+
+  totalPengeluaran += jumlah;
+  document.getElementById("totalPengeluaran").innerText = formatRupiah(totalPengeluaran);
+
+  closeTambahModal();
+
+  document.getElementById("tanggal").value = "";
+  document.getElementById("keterangan").value = "";
+  document.getElementById("jumlah").value = "";
+}
+
+document.getElementById("modalTambah").addEventListener("click", function(e){
+  if(e.target === this){
+    closeTambahModal();
+  }
+});
+
+</script>
 
 </body>
 </html>
