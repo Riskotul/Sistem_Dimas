@@ -41,17 +41,17 @@
   
   <div class="bg-blue-50 p-4 rounded shadow">
     <p class="text-gray-500 text-sm">Total Pengeluaran</p>
-    <p id="totalPengeluaran" class="text-xl font-bold">Rp 5.400.000</p>
+    <p id="totalPengeluaran" class="text-xl font-bold">Rp 0</p>
   </div>
 
   <div class="bg-blue-50 p-4 rounded shadow">
     <p class="text-gray-500 text-sm">Pengeluaran Pendidikan</p>
-    <p class="text-xl font-bold">Rp 3.200.000</p>
+    <p id="totalPendidikan" class="text-xl font-bold">Rp 0</p>
   </div>
 
   <div class="bg-blue-50 p-4 rounded shadow">
     <p class="text-gray-500 text-sm">Pengeluaran Sarana</p>
-    <p class="text-xl font-bold">Rp 2.200.000</p>
+    <p id="totalSarana" class="text-xl font-bold">Rp 0</p>
   </div>
 
 </div>
@@ -85,8 +85,8 @@
   <td class="border px-3 py-2">Buku Paket Kelas X</td>
   <td class="border px-3 py-2">Rp 2.000.000</td>
   <td class="border px-3 py-2 space-x-2">
-    <button class="bg-yellow-400 px-2 py-1 rounded text-xs">Edit</button>
-    <button class="bg-red-500 text-white px-2 py-1 rounded text-xs">Hapus</button>
+    <button onclick="openEditModal(this)" class="bg-yellow-400 px-2 py-1 rounded text-xs">Edit</button>
+    <button onclick="openDeleteModal(this)" class="bg-red-500 text-white px-2 py-1 rounded text-xs">Hapus</button>
   </td>
 </tr>
 
@@ -96,8 +96,8 @@
   <td class="border px-3 py-2">Renovasi Kelas XI</td>
   <td class="border px-3 py-2">Rp 1.500.000</td>
   <td class="border px-3 py-2 space-x-2">
-    <button class="bg-yellow-400 px-2 py-1 rounded text-xs">Edit</button>
-    <button class="bg-red-500 text-white px-2 py-1 rounded text-xs">Hapus</button>
+    <button onclick="openEditModal(this)" class="bg-yellow-400 px-2 py-1 rounded text-xs">Edit</button>
+    <button onclick="openDeleteModal(this)" class="bg-red-500 text-white px-2 py-1 rounded text-xs">Hapus</button>
   </td>
 </tr>
 
@@ -107,8 +107,8 @@
   <td class="border px-3 py-2">Pembelian Spidol & Kertas</td>
   <td class="border px-3 py-2">Rp 900.000</td>
   <td class="border px-3 py-2 space-x-2">
-    <button class="bg-yellow-400 px-2 py-1 rounded text-xs">Edit</button>
-    <button class="bg-red-500 text-white px-2 py-1 rounded text-xs">Hapus</button>
+    <button onclick="openEditModal(this)" class="bg-yellow-400 px-2 py-1 rounded text-xs">Edit</button>
+    <button onclick="openDeleteModal(this)" class="bg-red-500 text-white px-2 py-1 rounded text-xs">Hapus</button>
   </td>
 </tr>
 
@@ -172,19 +172,84 @@
   </div>
 </div>
 
+<!-- ================= MODAL EDIT ================= -->
+<div id="modalEdit" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-50">
+  <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl p-6">
+
+    <h3 class="text-xl font-bold mb-4">Edit Pengeluaran</h3>
+
+    <div class="space-y-4">
+
+      <div>
+        <label class="block text-sm font-semibold mb-1">Tanggal</label>
+        <input type="date" id="editTanggal"
+          class="w-full border rounded-lg px-3 py-2">
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1">Kategori</label>
+        <select id="editKategori"
+          class="w-full border rounded-lg px-3 py-2">
+          <option>Pengeluaran Pendidikan</option>
+          <option>Pengeluaran Sarana</option>
+          <option>ATK</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1">Keterangan</label>
+        <input type="text" id="editKeterangan"
+          class="w-full border rounded-lg px-3 py-2">
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold mb-1">Jumlah</label>
+        <input type="number" id="editJumlah"
+          class="w-full border rounded-lg px-3 py-2">
+      </div>
+
+    </div>
+
+    <div class="flex justify-end mt-6 space-x-3">
+      <button onclick="closeEditModal()" 
+        class="px-4 py-2 bg-gray-300 rounded-lg">Batal</button>
+
+      <button onclick="updatePengeluaran()" 
+        class="px-4 py-2 bg-blue-600 text-white rounded-lg">
+        Update
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================= MODAL DELETE ================= -->
+<div id="modalDelete" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-50">
+  <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl p-6 text-center">
+
+    <h3 class="text-lg font-bold mb-4">
+      Yakin ingin menghapus data ini?
+    </h3>
+
+    <div class="flex justify-center space-x-4 mt-6">
+      <button onclick="closeDeleteModal()" 
+        class="px-4 py-2 bg-gray-300 rounded-lg">Batal</button>
+
+      <button onclick="hapusPengeluaran()" 
+        class="px-4 py-2 bg-red-600 text-white rounded-lg">
+        Hapus
+      </button>
+    </div>
+
+  </div>
+</div>
+
 <script>
 
-let totalPengeluaran = 5400000;
+let selectedRow = null;
+let dataPengeluaran = [];
 
-function openTambahModal(){
-  document.getElementById("modalTambah").classList.remove("hidden");
-  document.getElementById("modalTambah").classList.add("flex");
-}
-
-function closeTambahModal(){
-  document.getElementById("modalTambah").classList.add("hidden");
-  document.getElementById("modalTambah").classList.remove("flex");
-}
+/* ================= FORMAT ================= */
 
 function formatRupiah(angka){
   return "Rp " + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
@@ -195,50 +260,194 @@ function formatTanggal(tgl){
   return date.toLocaleDateString("id-ID", { day:'2-digit', month:'short', year:'numeric' });
 }
 
+function convertToInputDate(tgl){
+  let date = new Date(tgl);
+  return date.toISOString().split("T")[0];
+}
+
+/* ================= LOAD DATA ================= */
+
+function loadData(){
+  let stored = localStorage.getItem("dataPengeluaran");
+  if(stored){
+    dataPengeluaran = JSON.parse(stored);
+  } else {
+    // Data awal dari tabel default
+    dataPengeluaran = [
+      {tanggal:"2026-02-08", kategori:"Pengadaan Buku", keterangan:"Buku Paket Kelas X", jumlah:2000000},
+      {tanggal:"2026-02-05", kategori:"Perbaikan Ruang", keterangan:"Renovasi Kelas XI", jumlah:1500000},
+      {tanggal:"2026-02-02", kategori:"ATK", keterangan:"Pembelian Spidol & Kertas", jumlah:900000}
+    ];
+    saveToStorage();
+  }
+
+  renderTable();
+}
+
+function saveToStorage(){
+  localStorage.setItem("dataPengeluaran", JSON.stringify(dataPengeluaran));
+}
+
+/* ================= RENDER TABLE ================= */
+
+function renderTable(){
+
+  let tabel = document.getElementById("tabelPengeluaran");
+  tabel.innerHTML = "";
+
+  let total = 0;
+  let totalPendidikan = 0;
+  let totalSarana = 0;
+
+  dataPengeluaran.forEach((item, index) => {
+
+    total += item.jumlah;
+
+    if(item.kategori === "Pengeluaran Pendidikan"){
+      totalPendidikan += item.jumlah;
+    }
+
+    if(item.kategori === "Pengeluaran Sarana"){
+      totalSarana += item.jumlah;
+    }
+
+    let row = `
+      <tr>
+        <td class="border px-3 py-2">${formatTanggal(item.tanggal)}</td>
+        <td class="border px-3 py-2">${item.kategori}</td>
+        <td class="border px-3 py-2">${item.keterangan}</td>
+        <td class="border px-3 py-2">${formatRupiah(item.jumlah)}</td>
+        <td class="border px-3 py-2 space-x-2">
+          <button onclick="openEditModal(${index})" class="bg-yellow-400 px-2 py-1 rounded text-xs">Edit</button>
+          <button onclick="openDeleteModal(${index})" class="bg-red-500 text-white px-2 py-1 rounded text-xs">Hapus</button>
+        </td>
+      </tr>
+    `;
+
+    tabel.innerHTML += row;
+  });
+
+  document.getElementById("totalPengeluaran").innerText = formatRupiah(total);
+  document.getElementById("totalPendidikan").innerText = formatRupiah(totalPendidikan);
+  document.getElementById("totalSarana").innerText = formatRupiah(totalSarana);
+}
+
+/* ================= TAMBAH ================= */
+
+function openTambahModal(){
+  modalTambah.classList.remove("hidden");
+  modalTambah.classList.add("flex");
+}
+
+function closeTambahModal(){
+  modalTambah.classList.add("hidden");
+  modalTambah.classList.remove("flex");
+}
+
 function simpanPengeluaran(){
 
-  let tanggal = document.getElementById("tanggal").value;
-  let kategori = document.getElementById("kategori").value;
-  let keterangan = document.getElementById("keterangan").value;
-  let jumlah = parseInt(document.getElementById("jumlah").value);
+  let tanggal = tanggalInput.value;
+  let kategori = kategoriInput.value;
+  let keterangan = keteranganInput.value;
+  let jumlah = parseInt(jumlahInput.value);
 
   if(!tanggal || !keterangan || !jumlah){
     alert("Harap isi semua data!");
     return;
   }
 
-  let tabel = document.getElementById("tabelPengeluaran");
-
-  let row = `
-    <tr>
-      <td class="border px-3 py-2">${formatTanggal(tanggal)}</td>
-      <td class="border px-3 py-2">${kategori}</td>
-      <td class="border px-3 py-2">${keterangan}</td>
-      <td class="border px-3 py-2">${formatRupiah(jumlah)}</td>
-      <td class="border px-3 py-2 space-x-2">
-        <button class="bg-yellow-400 px-2 py-1 rounded text-xs">Edit</button>
-        <button class="bg-red-500 text-white px-2 py-1 rounded text-xs">Hapus</button>
-      </td>
-    </tr>
-  `;
-
-  tabel.innerHTML += row;
-
-  totalPengeluaran += jumlah;
-  document.getElementById("totalPengeluaran").innerText = formatRupiah(totalPengeluaran);
+  dataPengeluaran.push({tanggal, kategori, keterangan, jumlah});
+  saveToStorage();
+  renderTable();
 
   closeTambahModal();
-
-  document.getElementById("tanggal").value = "";
-  document.getElementById("keterangan").value = "";
-  document.getElementById("jumlah").value = "";
+  tanggalInput.value = "";
+  keteranganInput.value = "";
+  jumlahInput.value = "";
 }
 
-document.getElementById("modalTambah").addEventListener("click", function(e){
-  if(e.target === this){
-    closeTambahModal();
-  }
+/* ================= EDIT ================= */
+
+function openEditModal(index){
+
+  selectedRow = index;
+
+  editTanggal.value = dataPengeluaran[index].tanggal;
+  editKategori.value = dataPengeluaran[index].kategori;
+  editKeterangan.value = dataPengeluaran[index].keterangan;
+  editJumlah.value = dataPengeluaran[index].jumlah;
+
+  modalEdit.classList.remove("hidden");
+  modalEdit.classList.add("flex");
+}
+
+function closeEditModal(){
+  modalEdit.classList.add("hidden");
+  modalEdit.classList.remove("flex");
+}
+
+function updatePengeluaran(){
+
+  dataPengeluaran[selectedRow] = {
+    tanggal: editTanggal.value,
+    kategori: editKategori.value,
+    keterangan: editKeterangan.value,
+    jumlah: parseInt(editJumlah.value)
+  };
+
+  saveToStorage();
+  renderTable();
+  closeEditModal();
+}
+
+/* ================= DELETE ================= */
+
+function openDeleteModal(index){
+  selectedRow = index;
+  modalDelete.classList.remove("hidden");
+  modalDelete.classList.add("flex");
+}
+
+function closeDeleteModal(){
+  modalDelete.classList.add("hidden");
+  modalDelete.classList.remove("flex");
+}
+
+function hapusPengeluaran(){
+  dataPengeluaran.splice(selectedRow, 1);
+  saveToStorage();
+  renderTable();
+  closeDeleteModal();
+}
+
+/* ================= AUTO CLOSE ================= */
+
+document.querySelectorAll(".fixed").forEach(modal => {
+  modal.addEventListener("click", function(e){
+    if(e.target === this){
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    }
+  });
 });
+
+const modalTambah = document.getElementById("modalTambah");
+const modalEdit = document.getElementById("modalEdit");
+const modalDelete = document.getElementById("modalDelete");
+
+const tanggalInput = document.getElementById("tanggal");
+const kategoriInput = document.getElementById("kategori");
+const keteranganInput = document.getElementById("keterangan");
+const jumlahInput = document.getElementById("jumlah");
+
+const editTanggal = document.getElementById("editTanggal");
+const editKategori = document.getElementById("editKategori");
+const editKeterangan = document.getElementById("editKeterangan");
+const editJumlah = document.getElementById("editJumlah");
+
+/* ================= INIT ================= */
+
+loadData();
 
 </script>
 

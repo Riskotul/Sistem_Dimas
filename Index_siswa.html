@@ -71,7 +71,7 @@
   <p class="text-sm text-gray-500">60% pembayaran selesai</p>
 
   <div class="mt-4 flex justify-center">
-    <button class="px-8 py-3 bg-gradient-to-r from-blue-600 to-green-500 text-white rounded-full shadow-lg hover:scale-105 transition">
+    <button onclick="bukaPopupBayar()" class="px-8 py-3 bg-gradient-to-r from-blue-600 to-green-500 text-white rounded-full shadow-lg hover:scale-105 transition">
       Bayar Sekarang
     </button>
   </div>
@@ -127,6 +127,64 @@
 </main>
 </div>
 
+<!-- POPUP PEMBAYARAN SPP -->
+<div id="popupBayarSPP" class="fixed inset-0 bg-black/40 hidden justify-center items-center z-50">
+
+<div class="bg-white w-full max-w-md p-6 rounded-xl shadow-xl">
+
+<h2 class="text-xl font-bold mb-4 text-center">Pembayaran SPP</h2>
+
+<div class="bg-blue-50 p-4 rounded-lg text-center mb-4">
+
+<p class="text-sm text-gray-500">Transfer ke rekening berikut</p>
+
+<p class="text-lg font-bold mt-2">SITI CHOIRIYAH</p>
+
+<p class="text-sm mt-1">Bank BRI</p>
+
+<p id="noRek" class="text-lg font-bold text-blue-600 mt-2">
+419701008341538
+</p>
+
+<button onclick="copyRekening()" class="mt-2 text-sm text-blue-600 underline">
+Salin Nomor Rekening
+</button>
+
+</div>
+
+<div class="space-y-3">
+
+<div>
+<label class="text-sm text-gray-500">Bulan Tagihan</label>
+<input type="text" value="Juni 2025" class="w-full border px-3 py-2 rounded bg-gray-100" readonly>
+</div>
+
+<div>
+<label class="text-sm text-gray-500">Jumlah Pembayaran</label>
+<input type="text" value="Rp 800.001" class="w-full border px-3 py-2 rounded bg-gray-100" readonly>
+</div>
+
+</div>
+
+<p class="text-xs text-gray-500 mt-3 text-center">
+Setelah melakukan transfer, klik konfirmasi di bawah.
+</p>
+
+<div class="flex gap-3 mt-4">
+
+<button onclick="tutupPopupBayar()" class="px-4 py-2 bg-gray-300 rounded w-full">
+Tutup
+</button>
+
+<button onclick="konfirmasiTransfer()" class="px-4 py-2 bg-green-600 text-white rounded w-full">
+Saya Sudah Transfer
+</button>
+
+</div>
+
+</div>
+</div>
+
 <!-- CHART SCRIPT -->
 <script>
 new Chart(document.getElementById('chartSPP'), {
@@ -140,6 +198,40 @@ new Chart(document.getElementById('chartSPP'), {
     }]
   },
 });
+</script>
+
+<script>
+
+const popupBayar = document.getElementById("popupBayarSPP");
+
+function bukaPopupBayar(){
+popupBayar.classList.remove("hidden");
+popupBayar.classList.add("flex");
+}
+
+function tutupPopupBayar(){
+popupBayar.classList.add("hidden");
+popupBayar.classList.remove("flex");
+}
+
+function copyRekening(){
+
+let rek = document.getElementById("noRek").innerText;
+
+navigator.clipboard.writeText(rek);
+
+alert("Nomor rekening berhasil disalin");
+
+}
+
+function konfirmasiTransfer(){
+
+alert("Pembayaran sedang diverifikasi oleh admin.");
+
+tutupPopupBayar();
+
+}
+
 </script>
 
 </body>
