@@ -40,7 +40,7 @@ switch ($user['role']) {
         header('Location: ../../index_admin.html');
         break;
     case 'kepala':
-        header('Location: ../../index_admin.html');
+        header('Location: ../../index_kepsek.html');
         break;
     case 'siswa':
         header('Location: ../../Index_siswa.html');

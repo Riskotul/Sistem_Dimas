@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,238 +10,263 @@
 
 <body class="bg-gray-50 font-sans">
 
-<div class="min-h-screen flex flex-col md:flex-row">
+  <div class="min-h-screen flex flex-col md:flex-row">
 
-<!-- Sidebar -->
-  <aside class="w-64 bg-gradient-to-b from-blue-400 to-blue-600 text-white p-6 hidden md:block">
-    <img src="asset/Logo SMK.jpg" class="h-28 mx-auto mb-8 rounded-xl bg-white p-2">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-gradient-to-b from-blue-400 to-blue-600 text-white p-6 hidden md:block">
+      <img src="asset/Logo SMK.jpg" class="h-28 mx-auto mb-8 rounded-xl bg-white p-2">
 
-    <p class="text-center font-bold">Dimas</p>
-    <p class="text-center text-sm mb-6">Bendahara</p>
+      <p class="text-center font-bold" id="sidebarNama">Dimas</p>
+      <p class="text-center text-sm mb-6" id="sidebarRole">Bendahara</p>
 
-    <nav class="space-y-3 text-sm">
-      <a href="index_admin.html" class="block hover:bg-white/20 p-3 rounded-lg">📊 Dashboard</a>
-      <a href="Data_Siswa.html" class="block hover:bg-white/20 p-3 rounded-lg">👨‍🎓 Data Siswa</a>
-      <a href="Tagihan_Bulanan.html" class="block hover:bg-white/20 p-3 rounded-lg">💳 Tagihan Bulanan</a>
-      <a href="Pembayaran_Masuk.html" class="block hover:bg-white/20 p-3 rounded-lg">⬆️ Pembayaran Masuk</a>
-      <a href="Laporan_Pengeluaran.html" class="block bg-white/20 p-3 rounded-lg">📉 Laporan Pengeluaran</a>
-    </nav>
-  </aside>
+      <nav class="space-y-3 text-sm">
+        <a href="index_admin.html" class="block hover:bg-white/20 p-3 rounded-lg">📊 Dashboard</a>
+        <a href="Data_Siswa.html" class="block hover:bg-white/20 p-3 rounded-lg">👨‍🎓 Data Siswa</a>
+        <a href="Tagihan_Bulanan.html" class="block hover:bg-white/20 p-3 rounded-lg">💳 Tagihan Bulanan</a>
+        <a href="Pembayaran_Masuk.html" class="block hover:bg-white/20 p-3 rounded-lg">⬆️ Pembayaran Masuk</a>
+        <a href="Laporan_Pengeluaran.html" class="block bg-white/20 p-3 rounded-lg">📉 Laporan Pengeluaran</a>
+      </nav>
+    </aside>
 
-<!-- MAIN -->
-<main class="flex-1 p-6">
+    <!-- MAIN -->
+    <main class="flex-1 p-6">
 
-<!-- Header -->
-<div class="flex justify-between items-center mb-8 mt-8">
-  <h2 class="text-xl font-bold">Laporan Pengeluaran Sekolah</h2>
-  <button class="bg-red-500 text-white px-3 py-1 rounded text-sm">Logout</button>
-</div>
-
-<!-- Ringkasan -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-  
-  <div class="bg-blue-50 p-4 rounded shadow">
-    <p class="text-gray-500 text-sm">Total Pengeluaran</p>
-    <p id="totalPengeluaran" class="text-xl font-bold">Rp 5.400.000</p>
-  </div>
-
-  <div class="bg-blue-50 p-4 rounded shadow">
-    <p class="text-gray-500 text-sm">Pengeluaran Pendidikan</p>
-    <p class="text-xl font-bold">Rp 3.200.000</p>
-  </div>
-
-  <div class="bg-blue-50 p-4 rounded shadow">
-    <p class="text-gray-500 text-sm">Pengeluaran Sarana</p>
-    <p class="text-xl font-bold">Rp 2.200.000</p>
-  </div>
-
-</div>
-
-<!-- Tombol Tambah -->
-<div class="mt-4 flex justify-between">
-  <button onclick="openTambahModal()" 
-    class="px-8 py-3 bg-gradient-to-r from-blue-600 to-green-500 text-white rounded-full shadow-lg hover:scale-105 transition">
-    + Tambah Pengeluaran
-  </button>
-</div>
-
-<!-- Tabel Pengeluaran -->
-<div class="bg-white rounded shadow p-4 overflow-x-auto mt-8">
-
-<table class="w-full text-ml border">
-<thead class="bg-gray-100">
-<tr>
-  <th class="border px-3 py-2">Tanggal</th>
-  <th class="border px-3 py-2">Kategori</th>
-  <th class="border px-3 py-2">Keterangan</th>
-  <th class="border px-3 py-2">Jumlah</th>
-  <th class="border px-3 py-2">Aksi</th>
-</tr>
-</thead>
-
-<tbody id="tabelPengeluaran">
-<tr>
-  <td class="border px-3 py-2">08 Feb 2026</td>
-  <td class="border px-3 py-2">Pengadaan Buku</td>
-  <td class="border px-3 py-2">Buku Paket Kelas X</td>
-  <td class="border px-3 py-2">Rp 2.000.000</td>
-  <td class="border px-3 py-2 space-x-2">
-    <button class="bg-yellow-400 px-2 py-1 rounded text-xs">Edit</button>
-    <button class="bg-red-500 text-white px-2 py-1 rounded text-xs">Hapus</button>
-  </td>
-</tr>
-
-<tr>
-  <td class="border px-3 py-2">05 Feb 2026</td>
-  <td class="border px-3 py-2">Perbaikan Ruang</td>
-  <td class="border px-3 py-2">Renovasi Kelas XI</td>
-  <td class="border px-3 py-2">Rp 1.500.000</td>
-  <td class="border px-3 py-2 space-x-2">
-    <button class="bg-yellow-400 px-2 py-1 rounded text-xs">Edit</button>
-    <button class="bg-red-500 text-white px-2 py-1 rounded text-xs">Hapus</button>
-  </td>
-</tr>
-
-<tr>
-  <td class="border px-3 py-2">02 Feb 2026</td>
-  <td class="border px-3 py-2">ATK</td>
-  <td class="border px-3 py-2">Pembelian Spidol & Kertas</td>
-  <td class="border px-3 py-2">Rp 900.000</td>
-  <td class="border px-3 py-2 space-x-2">
-    <button class="bg-yellow-400 px-2 py-1 rounded text-xs">Edit</button>
-    <button class="bg-red-500 text-white px-2 py-1 rounded text-xs">Hapus</button>
-  </td>
-</tr>
-
-</tbody>
-</table>
-
-</div>
-
-</main>
-</div>
-
-<!-- ================= MODAL TAMBAH ================= -->
-<div id="modalTambah" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-50">
-
-  <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl p-6">
-
-    <h3 class="text-xl font-bold mb-4">Tambah Pengeluaran</h3>
-
-    <div class="space-y-4">
-
-      <div>
-        <label class="block text-sm font-semibold mb-1">Tanggal</label>
-        <input type="date" id="tanggal"
-          class="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300">
+      <!-- Header -->
+      <div class="flex justify-between items-center mb-8 mt-8">
+        <h2 class="text-xl font-bold">Laporan Pengeluaran Sekolah</h2>
+        <button class="bg-red-500 text-white px-3 py-1 rounded text-sm">Logout</button>
       </div>
 
-      <div>
+      <!-- Ringkasan -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+
+        <div class="bg-blue-50 p-4 rounded shadow">
+          <p class="text-gray-500 text-sm">Total Pengeluaran</p>
+          <p id="totalPengeluaran" class="text-xl font-bold">Memuat...</p>
+        </div>
+
+        <div class="bg-blue-50 p-4 rounded shadow">
+          <p class="text-gray-500 text-sm">Jumlah Transaksi</p>
+          <p id="jumlahTransaksi" class="text-xl font-bold">-</p>
+        </div>
+
+        <div class="bg-blue-50 p-4 rounded shadow">
+          <p class="text-gray-500 text-sm">Pengeluaran Sarana</p>
+          <p id="rataRata" class="text-xl font-bold">-</p>
+        </div>
+
+      </div>
+
+      <!-- Tombol Tambah -->
+      <div class="mt-4 flex justify-between">
+        <button onclick="openTambahModal()"
+          class="px-8 py-3 bg-gradient-to-r from-blue-600 to-green-500 text-white rounded-full shadow-lg hover:scale-105 transition">
+          + Tambah Pengeluaran
+        </button>
+      </div>
+
+      <!-- Tabel Pengeluaran -->
+      <div class="bg-white rounded shadow p-4 overflow-x-auto mt-8">
+
+        <table class="w-full text-ml border">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="border px-3 py-2">Tanggal</th>
+  <th class="border px-3 py-2">Kategori</th>
+              <th class="border px-3 py-2">Keterangan</th>
+              <th class="border px-3 py-2">Jumlah</th>
+              <th class="border px-3 py-2">Aksi</th>
+            </tr>
+          </thead>
+
+          <tbody id="tabelPengeluaran">
+            <tr>
+              <td colspan="4" class="text-center py-4 text-gray-400">Memuat data...</td>
+            </tr>
+
+          </tbody>
+        </table>
+
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ================= MODAL TAMBAH ================= -->
+  <div id="modalTambah" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-50">
+
+    <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl p-6">
+
+      <h3 class="text-xl font-bold mb-4">Tambah Pengeluaran</h3>
+
+      <form id="formTambah" action="backend/proses/keuangan/tambah_keuangan.php" method="POST">
+        <input type="hidden" name="jenis_uang" value="pengeluaran">
+        <div class="space-y-4">
+
+          <div>
+            <label class="block text-sm font-semibold mb-1">Tanggal</label>
+        <input type="date" id="tanggal"
+              class="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300">
+          </div>
+
+          <div>
         <label class="block text-sm font-semibold mb-1">Kategori</label>
         <select id="kategori"
-          class="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300">
+              class="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300">
           <option>Pengeluaran Pendidikan</option>
           <option>Pengeluaran Sarana</option>
           <option>ATK</option>
         </select>
-      </div>
+  </div>
 
-      <div>
-        <label class="block text-sm font-semibold mb-1">Keterangan</label>
-        <input type="text" id="keterangan"
-          class="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300">
-      </div>
+          <div>
+            <label class="block text-sm font-semibold mb-1">Keterangan</label>
+            <input type="text" name="ket_uang" id="edit_ket" required
+              class="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300">
+          </div>
 
-      <div>
-        <label class="block text-sm font-semibold mb-1">Jumlah</label>
-        <input type="number" id="jumlah"
-          class="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300">
-      </div>
-
-    </div>
-
-    <div class="flex justify-end mt-6 space-x-3">
-      <button onclick="closeTambahModal()" 
-      class="px-4 py-2 bg-gray-300 rounded-lg">Batal</button>
-
-      <button onclick="simpanPengeluaran()" 
-      class="px-4 py-2 bg-blue-600 text-white rounded-lg">
-        Simpan
-      </button>
-    </div>
+          <div>
+            <label class="block text-sm font-semibold mb-1">Jumlah</label>
+            <input type="number" name="jml_uang" id="edit_jml" min="1" required
+              class="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300">
+          </div>
 
   </div>
-</div>
 
-<script>
+  <!-- ================= MODAL HAPUS ================= -->
+  <div id="modalHapus" class="fixed inset-0 bg-black/50 hidden justify-center items-center z-50">
+    <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center">
+      <h3 class="text-xl font-bold mb-2 text-red-600">Hapus Pengeluaran?</h3>
+      <p class="text-gray-600 mb-6 text-sm" id="hapusKet">-</p>
+      <form id="formHapus" action="backend/proses/keuangan/hapus_keuangan.php" method="POST">
+        <input type="hidden" name="id_uang" id="hapus_id">
+        <div class="flex justify-center space-x-3">
+          <button type="button" onclick="closeHapusModal()" class="px-4 py-2 bg-gray-300 rounded-lg">Batal</button>
+          <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded-lg">Hapus</button>
+        </div>
 
-let totalPengeluaran = 5400000;
+    </div>
+  </div>
 
-function openTambahModal(){
-  document.getElementById("modalTambah").classList.remove("hidden");
-  document.getElementById("modalTambah").classList.add("flex");
-}
+  <script>
 
-function closeTambahModal(){
-  document.getElementById("modalTambah").classList.add("hidden");
-  document.getElementById("modalTambah").classList.remove("flex");
-}
+    // ===================== FORMAT =====================
+    function formatRupiah(angka) {
+      return "Rp " + parseFloat(angka).toLocaleString("id-ID");
+    }
 
-function formatRupiah(angka){
-  return "Rp " + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-}
+    function formatTanggal(tgl) {
+      if (!tgl) return "-";
+      let d = new Date(tgl);
+      return d.toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" });
+    }
 
-function formatTanggal(tgl){
-  let date = new Date(tgl);
-  return date.toLocaleDateString("id-ID", { day:'2-digit', month:'short', year:'numeric' });
-}
+    // ===================== NOTIFIKASI =====================
+    function showNotif(msg, type = "success") {
+      alert(msg);
+    }
 
-function simpanPengeluaran(){
+    // ===================== LOAD DATA =====================
+    function loadData() {
+      fetch("backend/data/get_pengeluaran.php")
+        .then(res => res.json())
+        .then(json => {
+          if (!json.success) {
+            document.getElementById("tabelPengeluaran").innerHTML =
+              '<tr><td colspan="4" class="text-center py-4 text-red-400">Gagal memuat data.</td></tr>';
+            return;
+          }
 
-  let tanggal = document.getElementById("tanggal").value;
-  let kategori = document.getElementById("kategori").value;
-  let keterangan = document.getElementById("keterangan").value;
-  let jumlah = parseInt(document.getElementById("jumlah").value);
 
-  if(!tanggal || !keterangan || !jumlah){
-    alert("Harap isi semua data!");
-    return;
-  }
+          // Ringkasan
+          const total = json.total;
+          const jml = json.data.length;
+          document.getElementById("totalPengeluaran").textContent = formatRupiah(total);
+          document.getElementById("jumlahTransaksi").textContent = jml + " transaksi";
+          document.getElementById("rataRata").textContent = jml > 0 ? formatRupiah(total / jml) : "Rp 0";
 
-  let tabel = document.getElementById("tabelPengeluaran");
+          // Tabel
+          const tbody = document.getElementById("tabelPengeluaran");
+          if (json.data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-400">Belum ada data pengeluaran.</td></tr>';
+            return;
+          }
 
-  let row = `
-    <tr>
-      <td class="border px-3 py-2">${formatTanggal(tanggal)}</td>
-      <td class="border px-3 py-2">${kategori}</td>
-      <td class="border px-3 py-2">${keterangan}</td>
-      <td class="border px-3 py-2">${formatRupiah(jumlah)}</td>
-      <td class="border px-3 py-2 space-x-2">
-        <button class="bg-yellow-400 px-2 py-1 rounded text-xs">Edit</button>
-        <button class="bg-red-500 text-white px-2 py-1 rounded text-xs">Hapus</button>
-      </td>
-    </tr>
-  `;
+          tbody.innerHTML = json.data.map(row => `
+        <tr class="hover:bg-gray-50">
+          <td class="border px-3 py-2 text-sm">${formatTanggal(row.tgl_uang)}</td>
+          <td class="border px-3 py-2 text-sm">${row.ket_uang}</td>
+          <td class="border px-3 py-2 text-sm font-semibold">${formatRupiah(row.jml_uang)}</td>
+          <td class="border px-3 py-2 space-x-2 text-sm">
+            <button onclick='openEditModal(${JSON.stringify(row)})'
+              class="bg-yellow-400 px-2 py-1 rounded text-xs">Edit</button>
+            <button onclick='openHapusModal(${row.id_uang}, "${row.ket_uang}")'
+              class="bg-red-500 text-white px-2 py-1 rounded text-xs">Hapus</button>
+          </td>
+        </tr>
+      `).join("");
+        })
+        .catch(() => {
+          document.getElementById("tabelPengeluaran").innerHTML =
+            '<tr><td colspan="4" class="text-center py-4 text-red-400">Koneksi ke server gagal. Pastikan buka via Laragon.</td></tr>';
+        });
+    }
 
-  tabel.innerHTML += row;
+    // ===================== MODAL TAMBAH =====================
+    function openTambahModal() {
+      document.getElementById("tgl_tambah").value = new Date().toISOString().split("T")[0];
+      document.getElementById("ket_tambah").value = "";
+      document.getElementById("jml_tambah").value = "";
+      document.getElementById("modalTambah").classList.replace("hidden", "flex");
+    }
+    function closeTambahModal() {
+      document.getElementById("modalTambah").classList.replace("flex", "hidden");
+    }
 
-  totalPengeluaran += jumlah;
-  document.getElementById("totalPengeluaran").innerText = formatRupiah(totalPengeluaran);
+    // ===================== MODAL EDIT =====================
+    function openEditModal(row) {
+      document.getElementById("edit_id").value = row.id_uang;
+      document.getElementById("edit_tgl").value = row.tgl_uang;
+      document.getElementById("edit_ket").value = row.ket_uang;
+      document.getElementById("edit_jml").value = row.jml_uang;
+      document.getElementById("modalEdit").classList.replace("hidden", "flex");
+    }
+    function closeEditModal() {
+      document.getElementById("modalEdit").classList.replace("flex", "hidden");
+    }
 
-  closeTambahModal();
+    // ===================== MODAL HAPUS =====================
+    function openHapusModal(id, ket) {
+      document.getElementById("hapus_id").value = id;
+      document.getElementById("hapusKet").textContent = "Hapus \"" + ket + "\"?";
+      document.getElementById("modalHapus").classList.replace("hidden", "flex");
+    }
+    function closeHapusModal() {
+      document.getElementById("modalHapus").classList.replace("flex", "hidden");
+    }
 
-  document.getElementById("tanggal").value = "";
-  document.getElementById("keterangan").value = "";
-  document.getElementById("jumlah").value = "";
-}
+    // ===================== TUTUP MODAL KLIK BACKDROP =====================
+    ["modalTambah", "modalEdit", "modalHapus"].forEach(id => {
+      document.getElementById(id).addEventListener("click", function (e) {
+        if (e.target === this) {
+          this.classList.replace("flex", "hidden");
+        }
+      });
+    });
 
-document.getElementById("modalTambah").addEventListener("click", function(e){
-  if(e.target === this){
-    closeTambahModal();
-  }
-});
+    // ===================== CEK NOTIF DARI URL =====================
+    (function () {
+      const p = new URLSearchParams(window.location.search);
+      if (p.get("sukses")) showNotif(decodeURIComponent(p.get("sukses")), "success");
+      if (p.get("error")) showNotif(decodeURIComponent(p.get("error")), "error");
+      // Bersihkan URL query string
+      window.history.replaceState({}, document.title, window.location.pathname);
+    })();
 
-</script>
+    // ===================== INIT =====================
+    loadData();
+
+  </script>
 
 </body>
 </html>
