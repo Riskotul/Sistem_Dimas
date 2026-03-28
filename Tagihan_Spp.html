@@ -102,6 +102,13 @@
             </div>
         </div>
 
+<!-- Button Bayar di bawah -->
+    <div class="mt-6 flex justify-center">
+      <button onclick="bukaPopupBayar()" class="px-8 py-3 bg-gradient-to-r from-blue-600 to-green-500 text-white rounded-full shadow-lg hover:scale-105 transition">
+        Bayar Sekarang
+      </button>
+    </div>
+
 <!-- Kegiatan Khusus -->
   <div class="mb-10 mt-6">
     <h3 class="font-semibold text-lg mb-4">Kegiatan Khusus</h3>
@@ -127,7 +134,9 @@
             <td class="px-6 py-4">Rp 150.000</td>
             <td class="px-6 py-4 text-gray-400">–</td>
             <td class="px-6 py-4">
-              <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm">Bayar Sekarang</button>
+              <button onclick="bukaPopupKegiatan('Pembayaran Murid Baru','Rp 150.000')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm">
+                Bayar Sekarang
+              </button>
             </td>
           </tr>
           <tr class="border-t">
@@ -139,7 +148,9 @@
             <td class="px-6 py-4">Rp 150.000</td>
             <td class="px-6 py-4 text-gray-400">–</td>
             <td class="px-6 py-4">
-              <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm">Bayar Sekarang</button>
+              <button onclick="bukaPopupKegiatan('Kunjungan Industri','Rp 150.000')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm">
+                Bayar Sekarang
+              </button>
             </td>
           </tr>
           <tr class="border-t">
@@ -151,7 +162,9 @@
             <td class="px-6 py-4">Rp 200.000</td>
             <td class="px-6 py-4">05 Apr 2025</td>
             <td class="px-6 py-4">
-              <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm">Lihat Kwitansi</button>
+              <button onclick="bukaPopupKwitansi()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm">
+                Lihat Kwitansi
+              </button>
             </td>
           </tr>
           <tr class="border-t">
@@ -163,7 +176,9 @@
             <td class="px-6 py-4">Rp 120.000</td>
             <td class="px-6 py-4 text-gray-400">–</td>
             <td class="px-6 py-4">
-              <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm">Bayar Sekarang</button>
+              <button onclick="bukaPopupKegiatan('Kegiatan Akhir Tahun','Rp 120.000')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm">
+                Bayar Sekarang
+              </button>
             </td>
           </tr>
           <tr class="border-t">
@@ -175,19 +190,218 @@
             <td class="px-6 py-4">Rp 120.000</td>
             <td class="px-6 py-4 text-gray-400">–</td>
             <td class="px-6 py-4">
-              <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm">Bayar Sekarang</button>
+              <button onclick="bukaPopupKegiatan('Kemah Sekolah','Rp 120.000')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm">
+                Bayar Sekarang
+              </button>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <!-- Button Bayar di bawah -->
-    <div class="mt-6 flex justify-center">
-      <button class="px-8 py-3 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Bayar Sekarang</button>
-    </div>
+    
   </div>
-    </main>
+  </main>
   </div>
+
+  <!-- POPUP PEMBAYARAN SPP -->
+  <div id="popupBayarSPP" class="fixed inset-0 bg-black/40 hidden justify-center items-center z-50">
+
+  <div class="bg-white w-full max-w-md p-6 rounded-xl shadow-xl">
+
+  <h2 class="text-xl font-bold mb-4 text-center">Pembayaran SPP</h2>
+
+  <div class="bg-blue-50 p-4 rounded-lg text-center mb-4">
+
+  <p class="text-sm text-gray-500">Transfer ke rekening berikut</p>
+
+  <p class="text-lg font-bold mt-2">SITI CHOIRIYAH</p>
+
+  <p class="text-sm mt-1">Bank BRI</p>
+
+  <p id="noRek" class="text-lg font-bold text-blue-600 mt-2">
+  419701008341538
+  </p>
+
+  <button onclick="copyRekening()" class="mt-2 text-sm text-blue-600 underline">
+  Salin Nomor Rekening
+  </button>
+
+  </div>
+
+  <div class="space-y-3">
+
+  <div>
+  <label class="text-sm text-gray-500">Bulan Tagihan</label>
+  <input type="text" value="Juni 2025" class="w-full border px-3 py-2 rounded bg-gray-100" readonly>
+  </div>
+
+  <div>
+  <label class="text-sm text-gray-500">Jumlah Pembayaran</label>
+  <input type="text" value="Rp 800.001" class="w-full border px-3 py-2 rounded bg-gray-100" readonly>
+  </div>
+
+  </div>
+
+  <p class="text-xs text-gray-500 mt-3 text-center">
+  Setelah melakukan transfer, klik konfirmasi di bawah.
+  </p>
+
+  <div class="flex gap-3 mt-4">
+
+  <button onclick="tutupPopupBayar()" class="px-4 py-2 bg-gray-300 rounded w-full">
+  Tutup
+  </button>
+
+  <button onclick="konfirmasiTransfer()" class="px-4 py-2 bg-green-600 text-white rounded w-full">
+  Saya Sudah Transfer
+  </button>
+
+  </div>
+
+  </div>
+  </div>
+
+  <!-- POPUP BAYAR KEGIATAN -->
+  <div id="popupBayarKegiatan" class="fixed inset-0 bg-black/40 hidden justify-center items-center z-50">
+
+  <div class="bg-white w-full max-w-md p-6 rounded-xl shadow-xl">
+
+  <h2 class="text-xl font-bold mb-4 text-center">Pembayaran Kegiatan</h2>
+
+  <div class="space-y-3">
+
+  <div>
+  <label class="text-sm text-gray-500">Nama Kegiatan</label>
+  <input id="namaKegiatan" type="text" class="w-full border px-3 py-2 rounded bg-gray-100" readonly>
+  </div>
+
+  <div>
+  <label class="text-sm text-gray-500">Jumlah Pembayaran</label>
+  <input id="jumlahKegiatan" type="text" class="w-full border px-3 py-2 rounded bg-gray-100" readonly>
+  </div>
+
+  </div>
+
+  <div class="bg-blue-50 p-4 rounded-lg text-center mt-4">
+
+  <p class="text-sm text-gray-500">Transfer ke rekening</p>
+
+  <p class="font-bold text-lg">SITI CHOIRIYAH</p>
+  <p>Bank BRI</p>
+  <p class="font-bold text-blue-600">419701008341538</p>
+
+  </div>
+
+  <div class="flex gap-3 mt-4">
+
+  <button onclick="tutupPopupKegiatan()" class="px-4 py-2 bg-gray-300 rounded w-full">
+  Tutup
+  </button>
+
+  <button onclick="konfirmasiKegiatan()" class="px-4 py-2 bg-green-600 text-white rounded w-full">
+  Saya Sudah Transfer
+  </button>
+
+  </div>
+
+  </div>
+  </div>
+
+  <!-- POPUP KWITANSI -->
+  <div id="popupKwitansi" class="fixed inset-0 bg-black/40 hidden justify-center items-center z-50">
+
+  <div class="bg-white w-full max-w-md p-6 rounded-xl shadow-xl text-center">
+
+  <h2 class="text-xl font-bold mb-4">Kwitansi Pembayaran</h2>
+
+  <div class="bg-green-50 p-4 rounded-lg">
+
+  <p class="font-bold">Prakerin</p>
+  <p>Tanggal : 05 Apr 2025</p>
+  <p class="font-bold text-green-600">Rp 200.000</p>
+
+  </div>
+
+  <button onclick="tutupPopupKwitansi()" class="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg">
+  Tutup
+  </button>
+
+  </div>
+  </div>
+
+  <script>
+
+  const popupBayar = document.getElementById("popupBayarSPP");
+
+  function bukaPopupBayar(){
+  popupBayar.classList.remove("hidden");
+  popupBayar.classList.add("flex");
+  }
+
+  function tutupPopupBayar(){
+  popupBayar.classList.add("hidden");
+  popupBayar.classList.remove("flex");
+  }
+
+  function copyRekening(){
+
+  let rek = document.getElementById("noRek").innerText;
+
+  navigator.clipboard.writeText(rek);
+
+  alert("Nomor rekening berhasil disalin");
+
+  }
+
+  function konfirmasiTransfer(){
+
+  alert("Pembayaran sedang diverifikasi oleh admin.");
+
+  tutupPopupBayar();
+
+  }
+
+  function bukaPopupKegiatan(nama, jumlah){
+
+  document.getElementById("popupBayarKegiatan").classList.remove("hidden");
+  document.getElementById("popupBayarKegiatan").classList.add("flex");
+
+  document.getElementById("namaKegiatan").value = nama;
+  document.getElementById("jumlahKegiatan").value = jumlah;
+
+  }
+
+  function tutupPopupKegiatan(){
+
+  document.getElementById("popupBayarKegiatan").classList.add("hidden");
+  document.getElementById("popupBayarKegiatan").classList.remove("flex");
+
+  }
+
+  function konfirmasiKegiatan(){
+
+  alert("Pembayaran kegiatan sedang diverifikasi oleh admin");
+
+  tutupPopupKegiatan();
+
+  }
+
+  function bukaPopupKwitansi(){
+
+  document.getElementById("popupKwitansi").classList.remove("hidden");
+  document.getElementById("popupKwitansi").classList.add("flex");
+
+  }
+
+  function tutupPopupKwitansi(){
+
+  document.getElementById("popupKwitansi").classList.add("hidden");
+  document.getElementById("popupKwitansi").classList.remove("flex");
+
+  }
+
+  </script>
+
 </body>
 </html>
