@@ -124,77 +124,7 @@
             <th class="px-6 py-3">Aksi</th>
           </tr>
         </thead>
-        <tbody class="text-gray-800">
-          <tr class="border-t">
-            <td class="px-6 py-4">Pembayaran Murid Baru</td>
-            <td class="px-6 py-4">10</td>
-            <td class="px-6 py-4">
-              <span class="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-semibold">Belum Lunas</span>
-            </td>
-            <td class="px-6 py-4">Rp 150.000</td>
-            <td class="px-6 py-4 text-gray-400">–</td>
-            <td class="px-6 py-4">
-              <button onclick="bukaPopupKegiatan('Pembayaran Murid Baru','Rp 150.000')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm">
-                Bayar Sekarang
-              </button>
-            </td>
-          </tr>
-          <tr class="border-t">
-            <td class="px-6 py-4">Kunjungan Industri</td>
-            <td class="px-6 py-4">11</td>
-            <td class="px-6 py-4">
-              <span class="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-semibold">Belum Lunas</span>
-            </td>
-            <td class="px-6 py-4">Rp 150.000</td>
-            <td class="px-6 py-4 text-gray-400">–</td>
-            <td class="px-6 py-4">
-              <button onclick="bukaPopupKegiatan('Kunjungan Industri','Rp 150.000')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm">
-                Bayar Sekarang
-              </button>
-            </td>
-          </tr>
-          <tr class="border-t">
-            <td class="px-6 py-4">Prakerin</td>
-            <td class="px-6 py-4">12</td>
-            <td class="px-6 py-4">
-              <span class="bg-green-100 text-green-600 px-2 py-1 rounded text-xs font-semibold">Lunas</span>
-            </td>
-            <td class="px-6 py-4">Rp 200.000</td>
-            <td class="px-6 py-4">05 Apr 2025</td>
-            <td class="px-6 py-4">
-              <button onclick="bukaPopupKwitansi()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 text-sm">
-                Lihat Kwitansi
-              </button>
-            </td>
-          </tr>
-          <tr class="border-t">
-            <td class="px-6 py-4">Kegiatan Akhir Tahun</td>
-            <td class="px-6 py-4">12</td>
-            <td class="px-6 py-4">
-              <span class="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-semibold">Belum Lunas</span>
-            </td>
-            <td class="px-6 py-4">Rp 120.000</td>
-            <td class="px-6 py-4 text-gray-400">–</td>
-            <td class="px-6 py-4">
-              <button onclick="bukaPopupKegiatan('Kegiatan Akhir Tahun','Rp 120.000')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm">
-                Bayar Sekarang
-              </button>
-            </td>
-          </tr>
-          <tr class="border-t">
-            <td class="px-6 py-4">Kemah Sekolah</td>
-            <td class="px-6 py-4">10, 11, 12</td>
-            <td class="px-6 py-4">
-              <span class="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-semibold">Belum Lunas</span>
-            </td>
-            <td class="px-6 py-4">Rp 120.000</td>
-            <td class="px-6 py-4 text-gray-400">–</td>
-            <td class="px-6 py-4">
-              <button onclick="bukaPopupKegiatan('Kemah Sekolah','Rp 120.000')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm">
-                Bayar Sekarang
-              </button>
-            </td>
-          </tr>
+        <tbody id="tbodyKegiatanSpp" class="text-gray-800">
         </tbody>
       </table>
     </div>
@@ -231,14 +161,16 @@
 
   <div class="space-y-3">
 
+  <input type="hidden" id="idTunggakanSpp" value="">
+
   <div>
   <label class="text-sm text-gray-500">Bulan Tagihan</label>
-  <input type="text" value="Juni 2025" class="w-full border px-3 py-2 rounded bg-gray-100" readonly>
+  <input id="inputBulanTagihanSpp" type="text" value="-" class="w-full border px-3 py-2 rounded bg-gray-100" readonly>
   </div>
 
   <div>
   <label class="text-sm text-gray-500">Jumlah Pembayaran</label>
-  <input type="text" value="Rp 800.001" class="w-full border px-3 py-2 rounded bg-gray-100" readonly>
+  <input id="inputJumlahTagihanSpp" type="text" value="Rp 0" class="w-full border px-3 py-2 rounded bg-gray-100" readonly>
   </div>
 
   </div>
@@ -270,6 +202,8 @@
   <h2 class="text-xl font-bold mb-4 text-center">Pembayaran Kegiatan</h2>
 
   <div class="space-y-3">
+
+  <input type="hidden" id="idTagihanKegiatan" value="">
 
   <div>
   <label class="text-sm text-gray-500">Nama Kegiatan</label>
@@ -317,9 +251,9 @@
 
   <div class="bg-green-50 p-4 rounded-lg">
 
-  <p class="font-bold">Prakerin</p>
-  <p>Tanggal : 05 Apr 2025</p>
-  <p class="font-bold text-green-600">Rp 200.000</p>
+  <p id="kwitansiNama" class="font-bold">—</p>
+  <p>Tanggal : <span id="kwitansiTgl">—</span></p>
+  <p id="kwitansiJml" class="font-bold text-green-600">Rp 0</p>
 
   </div>
 
@@ -402,6 +336,7 @@
   }
 
   </script>
+<script src="backend/js/integration.js" defer></script>
 
 </body>
 </html>

@@ -18,7 +18,8 @@
     <p class="text-center text-sm mb-6">Kepala Sekolah</p>
 
     <nav class="space-y-3 text-sm">
-      <a href="index_admin.html" class="block bg-white/20 p-3 rounded-lg">📊 Dashboard</a>
+      <a href="index_kepsek.html" class="block bg-white/20 p-3 rounded-lg">📊 Dashboard</a>
+    </nav>
   </aside>
 
   <!-- Main Content -->
@@ -34,29 +35,40 @@
     <div class="bg-white p-4 rounded-xl shadow mb-6 flex items-center space-x-4">
       <div>
         <label class="text-sm text-gray-600">Tahun</label>
-        <select class="block mt-1 border rounded-md px-3 py-2">
-          <option>2024</option>
-          <option>2025</option>
+        <select id="filterTahun" class="block mt-1 border rounded-md px-3 py-2">
+          <option value="2024">2024</option>
+          <option value="2025">2025</option>
+          <option value="2026" selected>2026</option>
         </select>
       </div>
 
       <div>
         <label class="text-sm text-gray-600">Bulan</label>
-        <select class="block mt-1 border rounded-md px-3 py-2">
-          <option>April</option>
-          <option>Mei</option>
+        <select id="filterBulan" class="block mt-1 border rounded-md px-3 py-2">
+          <option value="1">Januari</option>
+          <option value="2">Februari</option>
+          <option value="3" selected>Maret</option>
+          <option value="4">April</option>
+          <option value="5">Mei</option>
+          <option value="6">Juni</option>
+          <option value="7">Juli</option>
+          <option value="8">Agustus</option>
+          <option value="9">September</option>
+          <option value="10">Oktober</option>
+          <option value="11">November</option>
+          <option value="12">Desember</option>
         </select>
       </div>
 
-      <button class="mt-5 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+      <button type="button" id="btnTampilkanRingkasan" class="mt-5 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
         Tampilkan
       </button>
     </div>
 
     <!-- Table -->
     <div class="bg-white p-6 rounded-xl shadow">
-      <h2 class="text-lg font-semibold mb-4 text-gray-700">
-        Ringkasan Keuangan Bulan April 2024
+      <h2 id="judulRingkasan" class="text-lg font-semibold mb-4 text-gray-700">
+        Ringkasan Keuangan
       </h2>
 
       <div class="overflow-x-auto">
@@ -70,24 +82,6 @@
             </tr>
           </thead>
           <tbody>
-            <tr class="text-center">
-              <td class="px-4 py-2 border">1 April</td>
-              <td class="px-4 py-2 border">Pembayaran SPP</td>
-              <td class="px-4 py-2 border text-green-600">Rp 20.000.000</td>
-              <td class="px-4 py-2 border">-</td>
-            </tr>
-            <tr class="text-center">
-              <td class="px-4 py-2 border">3 April</td>
-              <td class="px-4 py-2 border">Pembelian Buku</td>
-              <td class="px-4 py-2 border">-</td>
-              <td class="px-4 py-2 border text-red-600">Rp 3.500.000</td>
-            </tr>
-            <tr class="text-center">
-              <td class="px-4 py-2 border">10 April</td>
-              <td class="px-4 py-2 border">Pembayaran Gaji Guru</td>
-              <td class="px-4 py-2 border">-</td>
-              <td class="px-4 py-2 border text-red-600">Rp 12.000.000</td>
-            </tr>
           </tbody>
         </table>
       </div>
@@ -114,5 +108,6 @@
   </main>
 </div>
 
+<script src="backend/js/integration.js" defer></script>
 </body>
 </html>

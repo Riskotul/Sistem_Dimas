@@ -1,19 +1,14 @@
 <?php
-// data/get_transaksi.php
-// Ambil semua transaksi pembayaran
-
 require_once '../config/database.php';
 require_once '../helpers/session.php';
 
-if (!isLoggedIn()) {
-    http_response_code(401);
-    echo json_encode(['error' => 'Belum login']);
-    exit;
-}
+requireRoleJson(['bendahara', 'kepala']);
+
+header('Content-Type: application/json; charset=utf-8');
 
 $db    = getDB();
 $query = "SELECT tr.id_transaksi, tr.nama_siswa, tr.jml_bayar, tr.tgl_transaksi,
-                 s.kelas, s.nis
+                 s.kelas, s.nis, tr.keterangan
           FROM transaksi tr
           JOIN siswa s ON tr.id_siswa = s.id_siswa
           ORDER BY tr.tgl_transaksi DESC";
@@ -24,5 +19,4 @@ while ($row = $result->fetch_assoc()) {
 }
 $db->close();
 
-header('Content-Type: application/json');
-echo json_encode($data);
+echo json_encode(['success' => true, 'data' => $data]);

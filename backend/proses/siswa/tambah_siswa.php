@@ -14,6 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $nama_siswa = trim($_POST['nama_siswa'] ?? '');
 $nis        = trim($_POST['nis'] ?? '');
 $kelas      = trim($_POST['kelas'] ?? '');
+$email      = trim($_POST['email'] ?? '');
 $username   = trim($_POST['username'] ?? '');
 $password   = trim($_POST['password'] ?? '');
 
@@ -45,9 +46,11 @@ $stmt_user->execute();
 $id_user = $db->insert_id;
 $stmt_user->close();
 
+$emailVal = $email === '' ? '' : $email;
+
 // Buat data siswa
-$stmt_siswa = $db->prepare("INSERT INTO siswa (id_user, nama_siswa, nis, kelas) VALUES (?, ?, ?, ?)");
-$stmt_siswa->bind_param("isss", $id_user, $nama_siswa, $nis, $kelas);
+$stmt_siswa = $db->prepare('INSERT INTO siswa (id_user, nama_siswa, nis, kelas, email) VALUES (?, ?, ?, ?, ?)');
+$stmt_siswa->bind_param('issss', $id_user, $nama_siswa, $nis, $kelas, $emailVal);
 $stmt_siswa->execute();
 $id_siswa = $db->insert_id;
 $stmt_siswa->close();
