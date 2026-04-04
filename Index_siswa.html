@@ -66,9 +66,9 @@
   <h3 class="font-bold mb-4">Progress Pembayaran</h3>
 
   <div class="w-full bg-gray-200 rounded-full h-4 mb-3">
-    <div class="bg-gradient-to-r from-blue-500 to-green-400 h-4 rounded-full" style="width:60%"></div>
+    <div id="progressBarSPP" class="bg-gradient-to-r from-blue-500 to-green-400 h-4 rounded-full" style="width:60%"></div>
   </div>
-  <p class="text-sm text-gray-500">60% pembayaran selesai</p>
+  <p id="progressLabelSPP" class="text-sm text-gray-500">60% pembayaran selesai</p>
 
   <div class="mt-4 flex justify-center">
     <button onclick="bukaPopupBayar()" class="px-8 py-3 bg-gradient-to-r from-blue-600 to-green-500 text-white rounded-full shadow-lg hover:scale-105 transition">
@@ -185,21 +185,6 @@ Saya Sudah Transfer
 </div>
 </div>
 
-<!-- CHART SCRIPT Baru-->
-<script>
-new Chart(document.getElementById('chartSPP'), {
-  type: 'bar',
-  data: {
-    labels: ['Jan','Feb','Mar','Apr','Mei'],
-    datasets: [{
-      label: 'Pembayaran (Rp)',
-      data: [800000,800000,800000,800000,800000],
-      backgroundColor: ['#3b82f6']
-    }]
-  },
-});
-</script>
-
 <script>
 
 const popupBayar = document.getElementById("popupBayarSPP");
@@ -233,6 +218,7 @@ tutupPopupBayar();
 }
 
 </script>
+<script src="backend/js/integration.js" defer></script>
 
 </body>
 </html>

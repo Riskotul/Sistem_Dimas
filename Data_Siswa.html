@@ -48,57 +48,6 @@
           </tr>
         </thead>
         <tbody class="divide-y divide-gray-200 text-gray-800">
-
-          <tr>
-            <td class="px-6 py-4">Akmal Wijaya</td>
-            <td class="px-6 py-4">10 TKJ</td>
-            <td class="px-6 py-4">103550</td>
-            <td class="px-6 py-4">akmal@email.com</td>
-            <td class="px-6 py-4 text-right">
-              <button onclick="openModal(this)" class="text-sm border border-blue-300 px-3 py-1 rounded hover:bg-gray-100">Edit</button>
-            </td>
-          </tr>
-
-          <tr>
-            <td class="px-6 py-4">Dian Pratama</td>
-            <td class="px-6 py-4">11 TKJ</td>
-            <td class="px-6 py-4">115220</td>
-            <td class="px-6 py-4">dian@email.ac.id</td>
-            <td class="px-6 py-4 text-right">
-              <button onclick="openModal(this)" class="text-sm border border-blue-300 px-3 py-1 rounded hover:bg-gray-100">Edit</button>
-            </td>
-          </tr>
-
-          <tr>
-            <td class="px-6 py-4">Juleha</td>
-            <td class="px-6 py-4">12 TKJ</td>
-            <td class="px-6 py-4">125330</td>
-            <td class="px-6 py-4">juleha@email.ac.id</td>
-            <td class="px-6 py-4 text-right">
-              <button onclick="openModal(this)" class="text-sm border border-blue-300 px-3 py-1 rounded hover:bg-gray-100">Edit</button>
-            </td>
-          </tr>
-
-          <tr>
-            <td class="px-6 py-4">Lisa BlackPink</td>
-            <td class="px-6 py-4">12 TKJ</td>
-            <td class="px-6 py-4">125440</td>
-            <td class="px-6 py-4">lisa@email.ac.id</td>
-            <td class="px-6 py-4 text-right">
-              <button onclick="openModal(this)" class="text-sm border border-blue-300 px-3 py-1 rounded hover:bg-gray-100">Edit</button>
-            </td>
-          </tr>
-
-          <tr>
-            <td class="px-6 py-4">Muhammad Suga</td>
-            <td class="px-6 py-4">11 TKJ</td>
-            <td class="px-6 py-4">115660</td>
-            <td class="px-6 py-4">suga@email.ac.id</td>
-            <td class="px-6 py-4 text-right">
-              <button onclick="openModal(this)" class="text-sm border border-blue-300 px-3 py-1 rounded hover:bg-gray-100">Edit</button>
-            </td>
-          </tr>
-
         </tbody>
       </table>
     </div>
@@ -114,6 +63,8 @@
     <h3 class="text-lg font-bold mb-4">Edit Data Siswa</h3>
 
     <div class="space-y-3">
+
+      <input type="hidden" id="idSiswaEdit" value="">
 
       <input id="nama" type="text" placeholder="Nama"
         class="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300">
@@ -139,50 +90,7 @@
   </div>
 </div>
 
-<!-- ================= JAVASCRIPT ================= -->
-<script>
-
-let currentRow = null;
-
-function openModal(button) {
-  currentRow = button.closest("tr");
-  let cells = currentRow.querySelectorAll("td");
-
-  document.getElementById("nama").value = cells[0].innerText;
-  document.getElementById("kelas").value = cells[1].innerText;
-  document.getElementById("nis").value = cells[2].innerText;
-  document.getElementById("email").value = cells[3].innerText;
-
-  document.getElementById("modalEdit").classList.remove("hidden");
-  document.getElementById("modalEdit").classList.add("flex");
-}
-
-function closeModal() {
-  document.getElementById("modalEdit").classList.add("hidden");
-  document.getElementById("modalEdit").classList.remove("flex");
-}
-
-function saveData() {
-  if(currentRow){
-    let cells = currentRow.querySelectorAll("td");
-
-    cells[0].innerText = document.getElementById("nama").value;
-    cells[1].innerText = document.getElementById("kelas").value;
-    cells[2].innerText = document.getElementById("nis").value;
-    cells[3].innerText = document.getElementById("email").value;
-  }
-
-  closeModal();
-}
-
-// Tutup modal saat klik area gelap
-document.getElementById("modalEdit").addEventListener("click", function(e){
-  if(e.target === this){
-    closeModal();
-  }
-});
-
-</script>
+<script src="backend/js/integration.js" defer></script>
 
 </body>
 </html>

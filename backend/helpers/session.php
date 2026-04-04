@@ -55,3 +55,32 @@ function destroySession() {
     session_unset();
     session_destroy();
 }
+
+/**
+ * Wajib login untuk endpoint JSON (fetch/AJAX)
+ */
+function requireLoginJson() {
+    if (!isLoggedIn()) {
+        http_response_code(401);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['success' => false, 'error' => 'Belum login']);
+        exit;
+    }
+}
+
+/**
+ * Wajib role tertentu untuk endpoint JSON
+ * @param string|array $roles
+ */
+function requireRoleJson($roles) {
+    requireLoginJson();
+    if (is_string($roles)) {
+        $roles = [$roles];
+    }
+    if (!in_array($_SESSION['role'], $roles, true)) {
+        http_response_code(403);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['success' => false, 'error' => 'Akses ditolak']);
+        exit;
+    }
+}
