@@ -1,5 +1,16 @@
 <?php
 
+// Check for tab session ID
+$tabSessionId = $_SERVER['HTTP_X_TAB_SESSION_ID'] ?? null;
+if ($tabSessionId) {
+    // Hanya izinkan karakter session ID yang valid: A-Z a-z 0-9 , -
+    $tabSessionId = preg_replace('/[^a-zA-Z0-9,-]/', '', $tabSessionId);
+    if ($tabSessionId !== '') {
+        $tabSessionId = substr($tabSessionId, 0, 64);
+        session_id($tabSessionId);
+    }
+}
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }

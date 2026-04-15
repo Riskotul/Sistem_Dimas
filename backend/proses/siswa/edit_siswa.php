@@ -10,18 +10,16 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $id_siswa   = (int) ($_POST['id_siswa'] ?? 0);
 $nama_siswa = trim($_POST['nama_siswa'] ?? '');
-$nis        = trim($_POST['nis'] ?? '');
-$kelas      = trim($_POST['kelas'] ?? '');
 $email      = trim($_POST['email'] ?? '');
 
-if (!$id_siswa || $nama_siswa === '' || $nis === '' || $kelas === '') {
+if (!$id_siswa || $nama_siswa === '' || $email === '') {
     header('Location: ../../../Data_Siswa.html?error=Data+tidak+lengkap');
     exit;
 }
 
 $db   = getDB();
-$stmt = $db->prepare('UPDATE siswa SET nama_siswa=?, nis=?, kelas=?, email=? WHERE id_siswa=?');
-$stmt->bind_param('ssssi', $nama_siswa, $nis, $kelas, $email, $id_siswa);
+$stmt = $db->prepare('UPDATE siswa SET nama_siswa=?, email=? WHERE id_siswa=?');
+$stmt->bind_param('ssi', $nama_siswa, $email, $id_siswa);
 $stmt->execute();
 $stmt->close();
 

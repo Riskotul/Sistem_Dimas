@@ -3,8 +3,19 @@
 
   const BASE = '';
 
+  // Generate unique session ID per tab
+  if (!sessionStorage.getItem('tab_session_id')) {
+    const random = Math.random().toString(36).slice(2, 10);
+    const tabId = 'tab-' + Date.now().toString(36) + '-' + random;
+    sessionStorage.setItem('tab_session_id', tabId);
+  }
+  const TAB_SESSION_ID = sessionStorage.getItem('tab_session_id');
+
   async function apiJson(url, options) {
-    const r = await fetch(BASE + url, Object.assign({ credentials: 'same-origin' }, options));
+    const opts = Object.assign({ credentials: 'same-origin' }, options || {});
+    opts.headers = opts.headers || {};
+    opts.headers['X-Tab-Session-ID'] = TAB_SESSION_ID;
+    const r = await fetch(BASE + url, opts);
     if (r.status === 401) {
       window.location.href = BASE + 'login.php';
       return null;
@@ -15,6 +26,35 @@
     } catch (e) {
       console.error('Invalid JSON', url, text);
       return { success: false, error: 'Respons tidak valid' };
+    }
+  }
+
+  // Fungsi cache menggunakan sessionStorage
+  function getCache(key) {
+    try {
+      const fullKey = TAB_SESSION_ID + '_' + key;
+      const data = sessionStorage.getItem(fullKey);
+      return data ? JSON.parse(data) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function setCache(key, data) {
+    try {
+      const fullKey = TAB_SESSION_ID + '_' + key;
+      sessionStorage.setItem(fullKey, JSON.stringify(data));
+    } catch (e) {
+      // Jika storage penuh, abaikan
+    }
+  }
+
+  function clearCache(key) {
+    try {
+      const fullKey = TAB_SESSION_ID + '_' + key;
+      sessionStorage.removeItem(fullKey);
+    } catch (e) {
+      // Abaikan
     }
   }
 
@@ -38,6 +78,34 @@
       }
     });
   }
+
+  async function updateStudentSidebarProfile() {
+    const side = document.querySelector('aside p.text-center.font-bold');
+    const sub = document.querySelector('aside p.text-center.text-sm.mb-6');
+    if (!side || !sub) return;
+
+    const prof = await apiJson('backend/data/get_profile.php');
+    if (!prof || !prof.success || !prof.siswa) return;
+
+    side.textContent = prof.siswa.nama_siswa || 'Nama Siswa';
+    sub.textContent = prof.siswa.kelas ? 'Kelas ' + prof.siswa.kelas : 'Kelas: -';
+  }
+
+  window.openTambahModal = function () {
+    const modal = document.getElementById('modalTambah') || document.getElementById('modalTambahSiswa');
+    if (modal) {
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+  };
+
+  window.closeTambahModal = function () {
+    const modal = document.getElementById('modalTambah') || document.getElementById('modalTambahSiswa');
+    if (modal) {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+  };
 
   /* ---------- Laporan Pengeluaran ---------- */
   async function initLaporanPengeluaran() {
@@ -192,9 +260,12 @@
     if (!tbody) return;
 
     let list = [];
+    const now = new Date();
+    const bulanTagihanText = now.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+    const jatuhTempoText = '10 ' + now.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
 
     async function load() {
-      const j = await apiJson('backend/data/get_tunggakan.php');
+      const j = await apiJson('backend/data/get_siswa.php');
       if (!j || !j.success) return;
       list = j.data || [];
       renderTable(list);
@@ -202,27 +273,12 @@
 
     function renderTable(data) {
       tbody.innerHTML = '';
-      data.forEach(function (item, index) {
-        const lunas = Number(item.jml_tunggakan) <= 0;
-        const statusLabel = lunas
-          ? '<span class="bg-green-100 text-green-600 px-2 py-1 rounded text-xs">Lunas</span>'
-          : '<span class="bg-red-100 text-red-600 px-2 py-1 rounded text-xs">Belum Lunas</span>';
-        let aksi;
-        if (lunas) {
-          aksi =
-            '<button type="button" class="bg-blue-500 text-white px-3 py-1 rounded text-xs btn-detail" data-i="' +
-            index +
-            '">Detail</button>';
-        } else {
-          aksi =
-            '<button type="button" class="bg-green-500 text-white px-3 py-1 rounded text-xs btn-bayar" data-id="' +
-            item.id_tunggakan +
-            '">Bayar</button> ' +
-            '<button type="button" class="bg-red-500 text-white px-3 py-1 rounded text-xs btn-hapus" data-id="' +
-            item.id_tunggakan +
-            '">Hapus</button>';
-        }
-        const jt = item.tgl_jatuh_tempo ? formatTanggalId(item.tgl_jatuh_tempo) : '';
+      data.forEach(function (item) {
+        const tunggakan = Number(item.jml_tunggakan || 0);
+        const statusLabel = tunggakan > 0
+          ? '<span class="bg-red-100 text-red-600 px-2 py-1 rounded text-xs">Belum Lunas</span>'
+          : '<span class="bg-green-100 text-green-600 px-2 py-1 rounded text-xs">Lunas</span>';
+        const amount = formatRupiah(tunggakan);
         const tr = document.createElement('tr');
         tr.className = 'border-b hover:bg-blue-50';
         tr.innerHTML =
@@ -233,71 +289,18 @@
           (item.kelas || '') +
           '</td>' +
           '<td>' +
-          (item.periode_tagihan || '-') +
+          bulanTagihanText +
           '</td>' +
           '<td>' +
-          formatRupiah(item.jml_tunggakan) +
+          amount +
           '</td>' +
           '<td>' +
-          jt +
+          jatuhTempoText +
           '</td>' +
           '<td>' +
           statusLabel +
-          '</td>' +
-          '<td class="space-x-2">' +
-          aksi +
           '</td>';
         tbody.appendChild(tr);
-      });
-
-      tbody.querySelectorAll('.btn-bayar').forEach(function (btn) {
-        btn.onclick = async function () {
-          const fd = new FormData();
-          fd.append('id_tunggakan', btn.getAttribute('data-id'));
-          fd.append('tgl_transaksi', new Date().toISOString().slice(0, 10));
-          const r = await fetch(BASE + 'backend/proses/transaksi/bayar_tunggakan_penuh.php', {
-            method: 'POST',
-            body: fd,
-            credentials: 'same-origin',
-          });
-          if (r.ok) {
-            load();
-          } else {
-            alert('Gagal memproses pembayaran');
-          }
-        };
-      });
-      tbody.querySelectorAll('.btn-hapus').forEach(function (btn) {
-        btn.onclick = async function () {
-          if (!confirm('Yakin ingin menghapus tagihan?')) return;
-          const fd = new FormData();
-          fd.append('id_tunggakan', btn.getAttribute('data-id'));
-          const res = await fetch(BASE + 'backend/proses/tunggakan/hapus_tunggakan.php', {
-            method: 'POST',
-            body: fd,
-            credentials: 'same-origin',
-          });
-          if (res.ok) {
-            load();
-          }
-        };
-      });
-      tbody.querySelectorAll('.btn-detail').forEach(function (btn) {
-        btn.onclick = function () {
-          const i = parseInt(btn.getAttribute('data-i'), 10);
-          const d = data[i];
-          alert(
-            'Detail Tagihan\n\nNama : ' +
-              d.nama_siswa +
-              '\nKelas : ' +
-              d.kelas +
-              '\nPeriode : ' +
-              (d.periode_tagihan || '-') +
-              '\nJumlah : ' +
-              formatRupiah(d.jml_tunggakan) +
-              '\nStatus : Lunas'
-          );
-        };
       });
     }
 
@@ -309,51 +312,6 @@
       renderTable(hasil);
     };
 
-    window.openTambahModal = function () {
-      document.getElementById('modalTambahSiswa').classList.remove('hidden');
-      document.getElementById('modalTambahSiswa').classList.add('flex');
-    };
-    window.closeTambahModal = function () {
-      document.getElementById('modalTambahSiswa').classList.add('hidden');
-      document.getElementById('modalTambahSiswa').classList.remove('flex');
-    };
-
-    window.simpanSiswa = async function () {
-      const fd = new FormData();
-      fd.append('nama_siswa', document.getElementById('namaSiswa').value);
-      fd.append('kelas', document.getElementById('kelasSiswa').value);
-      fd.append('periode_tagihan', document.getElementById('bulanTagihan').value);
-      fd.append('jumlah_tagihan', document.getElementById('jumlahTagihan').value);
-      const t = new Date();
-      t.setDate(t.getDate() + 10);
-      fd.append('tgl_jatuh_tempo', t.toISOString().slice(0, 10));
-      const r = await fetch(BASE + 'backend/proses/tagihan/simpan_siswa_tagihan.php', {
-        method: 'POST',
-        body: fd,
-        credentials: 'same-origin',
-      });
-      
-      try {
-        const response = await r.text();
-        const json = JSON.parse(response);
-        
-        if (r.ok && json.success) {
-          document.getElementById('namaSiswa').value = '';
-          document.getElementById('kelasSiswa').value = '';
-          document.getElementById('bulanTagihan').value = '';
-          document.getElementById('jumlahTagihan').value = '';
-          window.closeTambahModal();
-          alert('Siswa dan tagihan berhasil ditambahkan');
-          load();
-        } else {
-          alert('Gagal menyimpan: ' + (json.error || 'Terjadi kesalahan'));
-        }
-      } catch (e) {
-        alert('Error: Respons tidak valid atau terjadi kesalahan server');
-        console.error('Parse error:', e);
-      }
-    };
-
     load();
   }
 
@@ -361,6 +319,8 @@
   async function initDataSiswa() {
     const wrap = document.querySelector('table.min-w-full tbody');
     if (!wrap) return;
+
+    const tambahBtn = document.getElementById('btnTambahSiswa');
 
     async function load() {
       const j = await apiJson('backend/data/get_siswa.php');
@@ -411,12 +371,24 @@
       document.getElementById('modalEdit').classList.remove('flex');
     };
 
+    window.closeTambahModal = function () {
+      document.getElementById('modalTambah').classList.add('hidden');
+      document.getElementById('modalTambah').classList.remove('flex');
+    };
+
+    window.openTambahModal = function () {
+      document.getElementById('modalTambah').classList.remove('hidden');
+      document.getElementById('modalTambah').classList.add('flex');
+    };
+
+    if (tambahBtn) {
+      tambahBtn.addEventListener('click', openTambahModal);
+    }
+
     window.saveData = async function () {
       const fd = new FormData();
       fd.append('id_siswa', document.getElementById('idSiswaEdit').value);
       fd.append('nama_siswa', document.getElementById('nama').value);
-      fd.append('nis', document.getElementById('nis').value);
-      fd.append('kelas', document.getElementById('kelas').value);
       fd.append('email', document.getElementById('email').value);
       const r = await fetch(BASE + 'backend/proses/siswa/edit_siswa.php', {
         method: 'POST',
@@ -431,11 +403,75 @@
       }
     };
 
+    window.hapusSiswa = async function () {
+      const fd = new FormData();
+      fd.append('id_siswa', document.getElementById('idSiswaEdit').value);
+      const r = await fetch(BASE + 'backend/proses/siswa/hapus_siswa.php', {
+        method: 'POST',
+        body: fd,
+        credentials: 'same-origin',
+      });
+      if (r.ok) {
+        window.closeModal();
+        load();
+      } else {
+        alert('Gagal menghapus siswa');
+      }
+    };
+
+    window.simpanSiswaBaru = async function () {
+      const nama = document.getElementById('namaTambah').value;
+      const kelas = document.getElementById('kelasTambah').value;
+      
+      if (!nama || !kelas) {
+        alert('Nama dan kelas harus diisi');
+        return;
+      }
+
+      // Generate NIS 10 digit
+      const nis = Math.floor(Math.random() * 9000000000) + 1000000000;
+      
+      // Generate email dari nama
+      const email = nama.toLowerCase().replace(/\s+/g, '') + '@gmail.com';
+
+      // Generate username dari NIS
+      const username = nis.toString();
+
+      const fd = new FormData();
+      fd.append('nama_siswa', nama);
+      fd.append('nis', nis.toString());
+      fd.append('kelas', kelas);
+      fd.append('email', email);
+      fd.append('username', username);
+      fd.append('password', 'admin123'); // Default password
+      
+      const r = await fetch(BASE + 'backend/proses/siswa/tambah_siswa.php', {
+        method: 'POST',
+        body: fd,
+        credentials: 'same-origin',
+      });
+      
+      if (r.ok) {
+        document.getElementById('namaTambah').value = '';
+        document.getElementById('kelasTambah').value = '';
+        window.closeTambahModal();
+        load();
+      } else {
+        alert('Gagal menambahkan siswa');
+      }
+    };
+
     window.openModal = openModal;
 
     document.getElementById('modalEdit').addEventListener('click', function (e) {
       if (e.target === this) {
         window.closeModal();
+      }
+    });
+
+    document.getElementById('modalTambah').addEventListener('click', function (e) {
+      if (e.target === this) {
+        window.closeTambahModal();
       }
     });
 
@@ -447,9 +483,40 @@
     const chartEl = document.getElementById('chartKelas');
     if (!chartEl || typeof Chart === 'undefined') return;
 
-    const dash = await apiJson('backend/data/get_dashboard.php');
-    const ch = await apiJson('backend/data/get_chart_kelas.php');
-    if (!dash || !dash.success) return;
+    // Load from cache first
+    let dash = getCache('dashboard_admin');
+    let ch = getCache('chart_kelas');
+    let tunggakan = getCache('tunggakan_admin');
+
+    // Display cached data if available
+    if (dash) {
+      updateDashboardAdmin(dash, ch, tunggakan, chartEl);
+    }
+
+    // Then fetch from server
+    const dashServer = await apiJson('backend/data/get_dashboard.php');
+    const chServer = await apiJson('backend/data/get_chart_kelas.php');
+    const tunggakanServer = await apiJson('backend/data/get_tunggakan.php');
+
+    if (dashServer && dashServer.success) {
+      dash = dashServer;
+      setCache('dashboard_admin', dash);
+    }
+    if (chServer && chServer.success) {
+      ch = chServer;
+      setCache('chart_kelas', ch);
+    }
+    if (tunggakanServer && tunggakanServer.success) {
+      tunggakan = tunggakanServer;
+      setCache('tunggakan_admin', tunggakan);
+    }
+
+    // Update display with latest data
+    updateDashboardAdmin(dash, ch, tunggakan, chartEl);
+  }
+
+  function updateDashboardAdmin(dash, ch, tunggakan, chartEl) {
+    if (!dash) return;
 
     const boxes = document.querySelectorAll('.grid.grid-cols-1.sm\\:grid-cols-2 > div.bg-blue-50');
     if (boxes.length >= 2) {
@@ -468,28 +535,25 @@
     }
 
     const tunggakanBody = document.getElementById('tabelTunggakanAdmin');
-    if (tunggakanBody && ch && ch.success) {
+    if (tunggakanBody && tunggakan && tunggakan.success) {
       tunggakanBody.innerHTML = '';
-      const j = await apiJson('backend/data/get_tunggakan.php');
-      if (j && j.success) {
-        (j.data || [])
-          .filter(function (t) {
-            return Number(t.jml_tunggakan) > 0;
-          })
-          .slice(0, 12)
-          .forEach(function (t) {
-            const tr = document.createElement('tr');
-            tr.className = 'border-t';
-            tr.innerHTML =
-              '<td class="px-6 py-4 border-r border-gray-200">' +
-              (t.nama_siswa || '') +
-              '</td>' +
-              '<td class="px-6 py-4">' +
-              (t.kelas || '') +
-              '</td>';
-            tunggakanBody.appendChild(tr);
-          });
-      }
+      (tunggakan.data || [])
+        .filter(function (t) {
+          return Number(t.jml_tunggakan) > 0;
+        })
+        .slice(0, 12)
+        .forEach(function (t) {
+          const tr = document.createElement('tr');
+          tr.className = 'border-t';
+          tr.innerHTML =
+            '<td class="px-6 py-4 border-r border-gray-200">' +
+            (t.nama_siswa || '') +
+            '</td>' +
+            '<td class="px-6 py-4">' +
+            (t.kelas || '') +
+            '</td>';
+          tunggakanBody.appendChild(tr);
+        });
     }
 
     if (ch && ch.success) {
@@ -523,13 +587,28 @@
 
   /* ---------- Dashboard Siswa ---------- */
   async function initIndexSiswa() {
+    await updateStudentSidebarProfile();
+
     const gridStats = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-4');
     const cards = gridStats ? gridStats.querySelectorAll('h3.text-xl') : [];
     if (cards.length < 4) return;
 
-    const j = await apiJson('backend/data/get_dashboard_siswa.php');
-    if (!j || !j.success) return;
+    // Load from cache first
+    let j = getCache('dashboard_siswa');
+    if (j) {
+      updateDashboardSiswa(j, cards);
+    }
 
+    // Then fetch from server
+    const jServer = await apiJson('backend/data/get_dashboard_siswa.php');
+    if (jServer && jServer.success) {
+      j = jServer;
+      setCache('dashboard_siswa', j);
+      updateDashboardSiswa(j, cards);
+    }
+  }
+
+  function updateDashboardSiswa(j, cards) {
     const s = j.siswa || {};
     cards[0].textContent = formatRupiah(j.total_tagihan);
     cards[1].textContent = Number(s.jml_tunggakan) > 0 ? 'Belum Lunas' : 'Lunas';
@@ -587,26 +666,11 @@
         },
       });
     }
-
-    const prof = await apiJson('backend/data/get_profile.php');
-    if (prof && prof.siswa) {
-      const side = document.querySelector('aside p.text-center.font-bold');
-      const sub = document.querySelector('aside p.text-center.text-sm.mb-6');
-      if (side) {
-        side.textContent = prof.siswa.nama_siswa || '';
-      }
-      if (sub) {
-        sub.textContent = prof.siswa.kelas || '';
-      }
-      const hi = document.querySelector('main .bg-white.px-4');
-      if (hi) {
-        hi.textContent = 'Hai, ' + (prof.siswa.nama_siswa || '');
-      }
-    }
   }
 
   /* ---------- Tagihan SPP (siswa) — sinkron dengan admin (transaksi → Pembayaran Masuk) ---------- */
   async function initTagihanSpp() {
+    await updateStudentSidebarProfile();
     const dash = await apiJson('backend/data/get_dashboard_siswa.php');
     const keg = await apiJson('backend/data/get_tagihan_kegiatan.php');
     const prof = await apiJson('backend/data/get_profile.php');
@@ -615,11 +679,47 @@
       return;
     }
 
-    const ring = document.querySelectorAll('.grid.grid-cols-1.sm\\:grid-cols-2 .bg-blue-50 p-8');
-    if (ring.length >= 2) {
-      ring[0].querySelector('.text-xl').textContent = formatRupiah(dash.total_tagihan);
-      ring[1].querySelector('.text-xl').textContent =
-        Number(dash.siswa.jml_tunggakan) > 0 ? 'Belum Lunas' : 'Lunas';
+    const totalEl = document.getElementById('tagihanTotalValue');
+    const statusEl = document.getElementById('tagihanStatusValue');
+    const progressEl = document.getElementById('progressPembayaran');
+    const now = new Date();
+    const currentMonthYear = now.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+    const statusMonth = dash.siswa && dash.siswa.periode_tagihan ? dash.siswa.periode_tagihan : currentMonthYear;
+
+    if (totalEl) {
+      totalEl.textContent = formatRupiah(dash.sisa_tunggakan || 0);
+    }
+
+    const hasTunggakanRow = Boolean(dash.siswa && dash.siswa.id_tunggakan);
+    const unpaid = Number(dash.sisa_tunggakan || 0) > 0 || !hasTunggakanRow;
+    const paidMonths = new Set(Object.keys(dash.chart_months || {}).map(function (m) {
+      return Number(m);
+    }));
+
+    if (statusEl) {
+      statusEl.textContent = `${statusMonth} ${unpaid ? 'Belum Lunas' : 'Lunas'}`;
+    }
+
+    if (progressEl) {
+      progressEl.innerHTML = '';
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+
+      months.forEach(function (label, index) {
+        const monthIndex = index + 1;
+        const paid = paidMonths.has(monthIndex);
+        const item = document.createElement('div');
+        const bubble = document.createElement('div');
+        bubble.className =
+          'w-10 h-10 mx-auto flex items-center justify-center rounded-sm text-xs ' +
+          (paid ? 'bg-blue-300 text-white' : 'bg-gray-200 text-gray-400');
+        bubble.textContent = paid ? '✔' : '-';
+        const labelEl = document.createElement('div');
+        labelEl.className = 'mt-4 mb-4';
+        labelEl.textContent = label;
+        item.appendChild(bubble);
+        item.appendChild(labelEl);
+        progressEl.appendChild(item);
+      });
     }
 
     const idTunEl = document.getElementById('idTunggakanSpp');
@@ -636,14 +736,7 @@
     }
 
     if (prof && prof.siswa) {
-      const side = document.querySelector('aside p.text-center.font-bold');
-      const sub = document.querySelector('aside p.text-center.text-sm.mb-6');
-      if (side) {
-        side.textContent = prof.siswa.nama_siswa || '';
-      }
-      if (sub) {
-        sub.textContent = prof.siswa.kelas || '';
-      }
+      await updateStudentSidebarProfile();
     }
 
     const tbody = document.getElementById('tbodyKegiatanSpp');
@@ -753,57 +846,50 @@
 
   /* ---------- Riwayat pembayaran ---------- */
   async function initRiwayat() {
-    const j = await apiJson('backend/data/get_laporan_pembayaran.php');
-    if (!j || !j.success) return;
+    await updateStudentSidebarProfile();
 
-    const byYear = {};
-    (j.data || []).forEach(function (row) {
-      const y = (row.tgl_transaksi || '').slice(0, 4);
-      if (!y) return;
-      if (!byYear[y]) {
-        byYear[y] = [];
-      }
-      byYear[y].push(row);
+    // Load from cache first
+    let j = getCache('laporan_pembayaran');
+    if (j) {
+      updateRiwayat(j);
+    }
+
+    // Then fetch from server
+    const jServer = await apiJson('backend/data/get_laporan_pembayaran.php');
+    if (jServer && jServer.success) {
+      j = jServer;
+      setCache('laporan_pembayaran', j);
+      updateRiwayat(j);
+    }
+  }
+
+  function updateRiwayat(j) {
+    const tbody = document.getElementById('tbodyRiwayat');
+    if (!tbody) return;
+
+    const rows = (j.data || []).slice().sort(function (a, b) {
+      return new Date(b.tgl_transaksi) - new Date(a.tgl_transaksi);
     });
 
-    const main = document.querySelector('main.flex-1');
-    if (!main) return;
-
-    const tbodies = main.querySelectorAll('table tbody');
-    if (tbodies.length < 2) return;
-
-    function fillTable(tbody, rows) {
-      tbody.innerHTML = '';
-      rows.forEach(function (r) {
-        const d = new Date(r.tgl_transaksi + 'T00:00:00');
-        const bulan = d.toLocaleDateString('id-ID', { month: 'long' });
-        const tr = document.createElement('tr');
-        tr.className = 'border-t';
-        tr.innerHTML =
-          '<td class="px-6 py-4">' +
-          bulan +
-          '</td>' +
-          '<td class="px-6 py-4">' +
-          formatTanggalId(r.tgl_transaksi) +
-          '</td>' +
-          '<td class="px-6 py-4">Lunas</td>' +
-          '<td class="px-6 py-4">' +
-          formatRupiah(r.jml_bayar) +
-          '</td>';
-        tbody.appendChild(tr);
-      });
-    }
-
-    const years = Object.keys(byYear).sort().reverse();
-    const sec = main.querySelectorAll('h3.font-semibold.mb-2.mt-8');
-    if (sec[0] && years[0]) {
-      sec[0].textContent = years[0];
-      fillTable(tbodies[0], byYear[years[0]] || []);
-    }
-    if (sec[1]) {
-      sec[1].textContent = years[1] || (years[0] ? '' : '');
-      fillTable(tbodies[1], years[1] ? byYear[years[1]] || [] : []);
-    }
+    tbody.innerHTML = '';
+    rows.forEach(function (r) {
+      const d = new Date((r.tgl_transaksi || '') + 'T00:00:00');
+      const bulan = d.toLocaleDateString('id-ID', { month: 'long' });
+      const tr = document.createElement('tr');
+      tr.className = 'border-t';
+      tr.innerHTML =
+        '<td class="px-6 py-4">' +
+        bulan +
+        '</td>' +
+        '<td class="px-6 py-4">' +
+        formatTanggalId(r.tgl_transaksi) +
+        '</td>' +
+        '<td class="px-6 py-4">Lunas</td>' +
+        '<td class="px-6 py-4">' +
+        formatRupiah(r.jml_bayar) +
+        '</td>';
+      tbody.appendChild(tr);
+    });
   }
 
   /* ---------- Pembayaran masuk ---------- */
@@ -838,55 +924,187 @@
 
   /* ---------- Kepsek dashboard ---------- */
   async function initKepsek() {
-    const table = document.querySelector('main table.min-w-full.border tbody');
+    const table = document.getElementById('tabelRingkasan');
     if (!table) return;
 
-    async function load() {
+    function setSelectOptions(select, values, formatter) {
+      if (!select || !Array.isArray(values)) return;
+      const currentValue = select.value;
+      select.innerHTML = '';
+      values.forEach(function (value) {
+        const option = document.createElement('option');
+        option.value = String(value);
+        option.textContent = formatter ? formatter(value) : String(value);
+        select.appendChild(option);
+      });
+      if (currentValue && Array.from(select.options).some(function (opt) { return opt.value === currentValue; })) {
+        select.value = currentValue;
+      }
+    }
+
+    async function load(forceYearMonth) {
       const thn = document.getElementById('filterTahun');
       const bln = document.getElementById('filterBulan');
-      const y = thn ? parseInt(thn.value, 10) : new Date().getFullYear();
-      const m = bln ? parseInt(bln.value, 10) : new Date().getMonth() + 1;
-      const j = await apiJson('backend/data/get_ringkasan_kepsek.php?tahun=' + y + '&bulan=' + m);
-      if (!j || !j.success) return;
+      const y = thn ? thn.value : 'all';
+      const m = bln ? bln.value : 'all';
+      const cacheKey = 'ringkasan_kepsek_' + y + '_' + m;
+      const yearFilter = y === 'all' ? null : Number(y);
+      const monthFilter = m === 'all' ? null : Number(m);
 
-      const title = document.getElementById('judulRingkasan');
-      if (title) {
-        title.textContent = 'Ringkasan Keuangan Bulan ' + j.nama_bulan + ' ' + j.tahun;
+      // Load from cache first
+      let j = getCache(cacheKey);
+      if (j) {
+        updateRingkasan(j, y, m);
       }
 
+      // Then fetch from server
+      const jServer = await apiJson('backend/data/get_ringkasan_kepsek.php?tahun=' + y + '&bulan=' + m);
+      if (jServer && jServer.success) {
+        j = jServer;
+        setCache(cacheKey, j);
+        updateRingkasan(j, y, m);
+      }
+
+      // Also load pemasukan total and merged table rows
+      const [jPembayaran, jPengeluaran] = await Promise.all([
+        apiJson('backend/data/get_transaksi.php'),
+        apiJson('backend/data/get_pengeluaran.php'),
+      ]);
+
+      let totalPemasukan = 0;
+      let totalPengeluaran = 0;
+      let combinedRows = [];
+
+      if (jPembayaran && jPembayaran.success) {
+        combinedRows = combinedRows.concat(
+          (jPembayaran.data || []).filter(function (item) {
+            const d = new Date((item.tgl_transaksi || '') + 'T00:00:00');
+            return (yearFilter === null || d.getFullYear() === yearFilter) &&
+                   (monthFilter === null || d.getMonth() + 1 === monthFilter);
+          }).map(function (item) {
+            totalPemasukan += Number(item.jml_bayar || 0);
+            return {
+              tgl: item.tgl_transaksi,
+              deskripsi: item.keterangan || 'Pembayaran Masuk',
+              pemasukan: Number(item.jml_bayar || 0),
+              pengeluaran: 0,
+            };
+          })
+        );
+      }
+
+      if (jPengeluaran && jPengeluaran.success) {
+        combinedRows = combinedRows.concat(
+          (jPengeluaran.data || []).filter(function (item) {
+            const d = new Date((item.tgl_uang || '') + 'T00:00:00');
+            return (yearFilter === null || d.getFullYear() === yearFilter) &&
+                   (monthFilter === null || d.getMonth() + 1 === monthFilter);
+          }).map(function (item) {
+            totalPengeluaran += Number(item.jml_uang || 0);
+            return {
+              tgl: item.tgl_uang,
+              deskripsi: (item.kategori || 'Pengeluaran') + (item.ket_uang ? ' - ' + item.ket_uang : ''),
+              pemasukan: 0,
+              pengeluaran: Number(item.jml_uang || 0),
+            };
+          })
+        );
+      }
+
+      renderCombinedTable(combinedRows);
+
+      const elPemasukan = document.getElementById('totalPemasukan');
+      const elPengeluaran = document.getElementById('totalPengeluaran');
+      const elSaldo = document.getElementById('saldo');
+      
+      if (elPemasukan) {
+        elPemasukan.textContent = formatRupiah(totalPemasukan);
+      }
+      if (elPengeluaran) {
+        elPengeluaran.textContent = formatRupiah(totalPengeluaran);
+      }
+      if (elSaldo) {
+        elSaldo.textContent = formatRupiah(totalPemasukan - totalPengeluaran);
+      }
+    }
+
+    function renderCombinedTable(rows) {
       table.innerHTML = '';
-      (j.rows || []).forEach(function (r) {
+      rows.sort(function (a, b) {
+        return new Date(b.tgl) - new Date(a.tgl);
+      }).forEach(function (row) {
         const tr = document.createElement('tr');
         tr.className = 'text-center';
-        const isIn = r.jenis_uang === 'pemasukan';
         tr.innerHTML =
           '<td class="px-4 py-2 border">' +
-          formatTanggalId(r.tgl_uang) +
+          formatTanggalId(row.tgl) +
           '</td>' +
           '<td class="px-4 py-2 border">' +
-          (r.ket_uang || '') +
+          (row.deskripsi || '') +
           '</td>' +
           '<td class="px-4 py-2 border text-green-600">' +
-          (isIn ? formatRupiah(r.jml_uang) : '-') +
+          (row.pemasukan ? formatRupiah(row.pemasukan) : '-') +
           '</td>' +
           '<td class="px-4 py-2 border text-red-600">' +
-          (!isIn ? formatRupiah(r.jml_uang) : '-') +
+          (row.pengeluaran ? formatRupiah(row.pengeluaran) : '-') +
           '</td>';
         table.appendChild(tr);
       });
+    }
 
-      const cards = document.querySelectorAll('.grid.md\\:grid-cols-3 .text-xl.font-bold');
-      if (cards.length >= 3) {
-        cards[0].textContent = formatRupiah(j.total_pemasukan);
-        cards[1].textContent = formatRupiah(j.total_pengeluaran);
-        cards[2].textContent = formatRupiah(j.saldo);
+    function updateRingkasan(j, y, m) {
+      const title = document.getElementById('judulRingkasan');
+      const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+      let titleText = 'Ringkasan Keuangan';
+
+      if (typeof m !== 'undefined' && m !== null) {
+        if (m === 'all') {
+          titleText += ' Semua Bulan';
+        } else {
+          const monthIndex = Number(m) - 1;
+          titleText += ' Bulan ' + (monthNames[monthIndex] || m);
+        }
       }
+      if (typeof y !== 'undefined' && y !== null) {
+        if (y === 'all') {
+          titleText += ' Semua Tahun';
+        } else {
+          titleText += ' Tahun ' + y;
+        }
+      }
+      if (title) {
+        title.textContent = titleText;
+      }
+
+      if (Array.isArray(j.available_years) && j.available_years.length) {
+        setSelectOptions(document.getElementById('filterTahun'), ['all'].concat(j.available_years), function (y) {
+          return y === 'all' ? 'Semua' : String(y);
+        });
+      }
+      if (Array.isArray(j.available_months) && j.available_months.length) {
+        setSelectOptions(document.getElementById('filterBulan'), ['all'].concat(j.available_months), function (m) {
+          if (m === 'all') return 'Semua';
+          return monthNames[m - 1] || String(m);
+        });
+      }
+    }
+
+    const thn = document.getElementById('filterTahun');
+    if (thn) {
+      thn.addEventListener('change', load);
+    }
+    const bln = document.getElementById('filterBulan');
+    if (bln) {
+      bln.addEventListener('change', load);
     }
 
     const btn = document.getElementById('btnTampilkanRingkasan');
     if (btn) {
-      btn.addEventListener('click', load);
+      btn.addEventListener('click', function () {
+        load(true);
+      });
     }
+
     load();
   }
 
@@ -909,10 +1127,16 @@
       initTagihanSpp();
     } else if (p === 'Riwayat_pembayaran.html') {
       initRiwayat();
+    } else if (p === 'Bantuan_Siswa.html') {
+      initBantuan();
     } else if (p === 'Pembayaran_Masuk.html') {
       initPembayaranMasuk();
     } else if (p === 'index_kepsek.html') {
       initKepsek();
     }
   });
+
+  async function initBantuan() {
+    await updateStudentSidebarProfile();
+  }
 })();

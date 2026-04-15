@@ -2,7 +2,7 @@
 require_once '../config/database.php';
 require_once '../helpers/session.php';
 
-requireRoleJson('bendahara');
+requireRoleJson(['bendahara', 'kepala']);
 
 header('Content-Type: application/json; charset=utf-8');
 

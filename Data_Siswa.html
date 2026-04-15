@@ -35,6 +35,14 @@
       <button class="bg-red-500 text-white px-3 py-1 rounded text-sm">Logout</button>
     </div>
 
+    <!-- Button Tambah Data Siswa -->
+    <div class="mb-6 flex justify-start">
+      <button type="button" id="btnTambahSiswa" onclick="openTambahModal()"
+      class="px-8 py-3 bg-gradient-to-r from-blue-600 to-green-500 text-white rounded-full shadow-lg hover:scale-105 transition">
+        + Tambah Data Siswa
+      </button>
+    </div>
+
     <!-- Table -->
     <div class="overflow-x-auto bg-white rounded-xl shadow">
       <table class="min-w-full divide-y divide-gray-200">
@@ -69,11 +77,11 @@
       <input id="nama" type="text" placeholder="Nama"
         class="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300">
 
-      <input id="kelas" type="text" placeholder="Kelas"
-        class="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300">
+      <input id="kelas" type="text" placeholder="Kelas" readonly
+        class="w-full border rounded-lg px-3 py-2 bg-gray-100 text-gray-500 cursor-not-allowed">
 
-      <input id="nis" type="text" placeholder="NIS"
-        class="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300">
+      <input id="nis" type="text" placeholder="NIS" readonly
+        class="w-full border rounded-lg px-3 py-2 bg-gray-100 text-gray-500 cursor-not-allowed">
 
       <input id="email" type="text" placeholder="Email"
         class="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300">
@@ -81,8 +89,48 @@
     </div>
 
     <div class="flex justify-end mt-6 space-x-2">
+      <button onclick="hapusSiswa()" class="px-4 py-2 bg-red-600 text-white rounded-lg">
+         Hapus Siswa
+      </button>
       <button onclick="closeModal()" class="px-4 py-2 bg-gray-300 rounded-lg">Batal</button>
       <button onclick="saveData()" class="px-4 py-2 bg-blue-600 text-white rounded-lg">
+         Simpan
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL TAMBAH SISWA -->
+<div id="modalTambah" class="fixed inset-0 bg-black/50 hidden justify-center items-center">
+
+  <div class="bg-white rounded-xl w-full max-w-md p-6 relative">
+
+    <h3 class="text-lg font-bold mb-4">Tambah Siswa</h3>
+
+    <div class="space-y-3">
+
+      <input id="namaTambah" type="text" placeholder="Nama"
+        class="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300">
+
+      <select id="kelasTambah" class="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300">
+        <option value="">Pilih Kelas</option>
+        <option value="X TKJ">X TKJ</option>
+        <option value="X TSM">X TSM</option>
+        <option value="X Perhotelan">X Perhotelan</option>
+        <option value="XI TKJ">XI TKJ</option>
+        <option value="XI TSM">XI TSM</option>
+        <option value="XI Perhotelan">XI Perhotelan</option>
+        <option value="XII TKJ">XII TKJ</option>
+        <option value="XII TSM">XII TSM</option>
+        <option value="XII Perhotelan">XII Perhotelan</option>
+      </select>
+
+    </div>
+
+    <div class="flex justify-end mt-6 space-x-2">
+      <button onclick="closeTambahModal()" class="px-4 py-2 bg-gray-300 rounded-lg">Batal</button>
+      <button onclick="simpanSiswaBaru()" class="px-4 py-2 bg-blue-600 text-white rounded-lg">
          Simpan
       </button>
     </div>

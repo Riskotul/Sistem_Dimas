@@ -36,7 +36,7 @@ $id_uang = (int) $db->insert_id;
 $stmt->close();
 
 $stmt2 = $db->prepare(
-    'INSERT INTO laporan_keuangan (jenis_uang, ket_uang, tgl_uang, jml_uang, kategori, id_kuangan, id_kepala)
+    'INSERT INTO laporan_keuangan (jenis_uang, ket_uang, tgl_uang, jml_uang, kategori, id_keuangan, id_kepala)
      VALUES (?, ?, ?, ?, ?, ?, ?)'
 );
 $stmt2->bind_param('ssdsisi', $jenis_uang, $ket_uang, $tgl_uang, $jml_uang, $kategori, $id_uang, $id_kepala);

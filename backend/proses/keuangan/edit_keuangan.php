@@ -31,7 +31,7 @@ $stmt->close();
 
 $stmt2 = $db->prepare(
     'UPDATE laporan_keuangan SET jenis_uang=?, ket_uang=?, tgl_uang=?, jml_uang=?, kategori=?
-     WHERE id_kuangan=?'
+     WHERE id_keuangan=?'
 );
 $stmt2->bind_param('sssdsi', $jenis_uang, $ket_uang, $tgl_uang, $jml_uang, $kategori, $id_uang);
 $stmt2->execute();

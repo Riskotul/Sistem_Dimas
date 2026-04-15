@@ -2,7 +2,7 @@
 require_once '../config/database.php';
 require_once '../helpers/session.php';
 
-$referer = $_SERVER['HTTP_REFERER'] ?? '../../Login_Admin.html';
+$referer = '../../login.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: ' . $referer);
@@ -19,12 +19,29 @@ if (empty($username) || empty($password)) {
 }
 
 $db   = getDB();
-$stmt = $db->prepare("SELECT id_user, username, password, role FROM users WHERE username = ?");
-$stmt->bind_param("s", $username);
-$stmt->execute();
-$result = $stmt->get_result();
-$user   = $result->fetch_assoc();
-$stmt->close();
+
+// Cek apakah input adalah NIS (untuk siswa) atau username (untuk admin/kepsek)
+$user   = null;
+$role   = null;
+
+if (is_numeric($username)) {
+    // Jika input numerik, cek sebagai NIS siswa
+    $stmt = $db->prepare("SELECT u.id_user, u.username, u.password, u.role FROM users u JOIN siswa s ON u.id_user = s.id_user WHERE s.nis = ?");
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user   = $result->fetch_assoc();
+    $stmt->close();
+} else {
+    // Jika input bukan numerik, cek sebagai username biasa
+    $stmt = $db->prepare("SELECT id_user, username, password, role FROM users WHERE username = ?");
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user   = $result->fetch_assoc();
+    $stmt->close();
+}
+
 $db->close();
 
 if (!$user || !password_verify($password, $user['password'])) {
@@ -46,7 +63,7 @@ switch ($user['role']) {
         header('Location: ../../Index_siswa.html');
         break;
     default:
-        header('Location: ../../Login_Admin.html');
+        header('Location: ../../login.php');
 }
 exit;
 

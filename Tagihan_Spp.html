@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Dashboard Pembayaran</title>
+  <title>Tagihan SPP</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50 font-sans">
@@ -14,8 +14,8 @@
     <aside class="w-64 bg-gradient-to-b from-blue-400 to-blue-600 text-white p-6 hidden md:block">
       <img src="asset/Logo SMK.jpg" class="h-28 mx-auto mb-8 rounded-xl bg-white p-2">
 
-      <p class="text-center font-bold">Dimas Siswa</p>
-      <p class="text-center text-sm mb-6">Kelas XII RPL</p>
+      <p class="text-center font-bold">Nama Siswa</p>
+      <p class="text-center text-sm mb-6">Kelas: -</p>
 
       <nav class="space-y-3 text-sm">
         <a href="Index_siswa.html" class="block hover:bg-white/20 p-3 rounded-lg">📊 Dashboard</a>
@@ -28,79 +28,26 @@
     <!-- Main Content -->
     <main class="flex-1 p-4 md:p-8">
       <div class="flex justify-between items-center mb-6">
-        <h2 class="text-xl font-bold">Dashboard</h2>
-        <button class="bg-gray-200 text-sm px-3 py-1 rounded hover:bg-gray-300">Hai Dimas</button>
+        <h2 class="text-xl font-bold">Tagihan SPP</h2>
+        <button class="bg-red-500 text-white px-3 py-1 rounded text-sm">Logout</button>
       </div>
 
       <!-- Ringkasan -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 mb-10 text-m">
         <div class="bg-blue-50 p-8 rounded">
           <p class="text-black-500">Total Tagihan</p>
-          <p class="text-xl font-semibold">Rp 800.001</p>
+          <p id="tagihanTotalValue" class="text-xl font-semibold">Rp 0</p>
         </div>
         <div class="bg-blue-50 p-8 rounded">
           <p class="text-black-500">Status Pembayaran</p>
-          <p class="text-xl font-semibold">Juni Belum Lunas</p>
+          <p id="tagihanStatusValue" class="text-xl font-semibold">-</p>
         </div>
       </div>
 
     <!-- Progress Pembayaran -->
         <div class="mb-10">
         <h3 class="font-semibold mb-8">Progress Pembayaran</h3>
-        <div class="grid grid-cols-12 gap-2 text-center text-m">
-            
-            <!-- Bulan yang sudah dibayar -->
-            <div>
-            <div class="w-10 h-10 mx-auto bg-blue-300 text-white text-xs flex items-center justify-center rounded-sm">✔</div>
-            <div class="mt-4 mb-4">Jan</div>
-            </div>
-            <div>
-            <div class="w-10 h-10 mx-auto bg-blue-300 text-white text-xs flex items-center justify-center rounded-sm">✔</div>
-            <div class="mt-4 mb-4">Feb</div>
-            </div>
-            <div>
-            <div class="w-10 h-10 mx-auto bg-blue-300 text-white text-xs flex items-center justify-center rounded-sm">✔</div>
-            <div class="mt-4 mb-4">Mar</div>
-            </div>
-            <div>
-            <div class="w-10 h-10 mx-auto bg-blue-300 text-white text-xs flex items-center justify-center rounded-sm">✔</div>
-            <div class="mt-4 mb-4">Apr</div>
-            </div>
-            <div>
-            <div class="w-10 h-10 mx-auto bg-blue-300 text-white text-xs flex items-center justify-center rounded-sm">✔</div>
-            <div class="mt-4">Mei</div>
-            </div>
-
-            <!-- Bulan yang belum dibayar -->
-            <div>
-            <div class="w-10 h-10 mx-auto bg-gray-200 text-gray-400 text-xs flex items-center justify-center rounded-sm">-</div>
-            <div class="mt-4 mb-4">Jun</div>
-            </div>
-            <div>
-            <div class="w-10 h-10 mx-auto bg-gray-200 text-gray-400 text-xs flex items-center justify-center rounded-sm">-</div>
-            <div class="mt-4 mb-4">Jul</div>
-            </div>
-            <div>
-            <div class="w-10 h-10 mx-auto bg-gray-200 text-gray-400 text-xs flex items-center justify-center rounded-sm">-</div>
-            <div class="mt-4 mb-4">Agu</div>
-            </div>
-            <div>
-            <div class="w-10 h-10 mx-auto bg-gray-200 text-gray-400 text-xs flex items-center justify-center rounded-sm">-</div>
-            <div class="mt-4 mb-4">Sep</div>
-            </div>
-            <div>
-            <div class="w-10 h-10 mx-auto bg-gray-200 text-gray-400 text-xs flex items-center justify-center rounded-sm">-</div>
-            <div class="mt-4 mb-4">Okt</div>
-            </div>
-            <div>
-            <div class="w-10 h-10 mx-auto bg-gray-200 text-gray-400 text-xs flex items-center justify-center rounded-sm">-</div>
-            <div class="mt-4 mb-4">Nov</div>
-            </div>
-            <div>
-            <div class="w-10 h-10 mx-auto bg-gray-200 text-gray-400 text-xs flex items-center justify-center rounded-sm">-</div>
-            <div class="mt-4 mb-4">Des</div>
-            </div>
-        </div>
+        <div id="progressPembayaran" class="grid grid-cols-12 gap-2 text-center text-m"></div>
 
 <!-- Button Bayar di bawah -->
     <div class="mt-6 flex justify-center">
@@ -289,8 +236,6 @@
   }
 
   function konfirmasiTransfer(){
-
-  alert("Pembayaran sedang diverifikasi oleh admin.");
 
   tutupPopupBayar();
 

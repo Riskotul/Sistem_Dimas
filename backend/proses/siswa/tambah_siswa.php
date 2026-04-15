@@ -55,9 +55,15 @@ $stmt_siswa->execute();
 $id_siswa = $db->insert_id;
 $stmt_siswa->close();
 
-// Buat record tunggakan awal = 0
-$stmt_tngg = $db->prepare("INSERT INTO tunggakan (id_siswa, nama_siswa, jml_tunggakan) VALUES (?, ?, 0)");
-$stmt_tngg->bind_param("is", $id_siswa, $nama_siswa);
+// Buat record tunggakan awal default SPP
+$defaultTagihan = 100000.00;
+$bulanIndo = ['Jan' => 'Januari', 'Feb' => 'Februari', 'Mar' => 'Maret', 'Apr' => 'April', 'May' => 'Mei', 'Jun' => 'Juni', 'Jul' => 'Juli', 'Aug' => 'Agustus', 'Sep' => 'September', 'Oct' => 'Oktober', 'Nov' => 'November', 'Dec' => 'Desember'];
+$now     = new DateTime();
+$bulanKey = $now->format('M');
+$periodeTagihan = ($bulanIndo[$bulanKey] ?? $now->format('F')) . ' ' . $now->format('Y');
+$tglJatuhTempo = $now->format('Y-m-10');
+$stmt_tngg = $db->prepare("INSERT INTO tunggakan (id_siswa, nama_siswa, jml_tunggakan, periode_tagihan, tgl_jatuh_tempo) VALUES (?, ?, ?, ?, ?)");
+$stmt_tngg->bind_param("isdss", $id_siswa, $nama_siswa, $defaultTagihan, $periodeTagihan, $tglJatuhTempo);
 $stmt_tngg->execute();
 $stmt_tngg->close();
 

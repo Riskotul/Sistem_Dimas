@@ -6,9 +6,11 @@ requireRoleJson('kepala');
 
 header('Content-Type: application/json; charset=utf-8');
 
-$tahun = (int) ($_GET['tahun'] ?? date('Y'));
-$bulan = (int) ($_GET['bulan'] ?? date('n'));
-if ($bulan < 1 || $bulan > 12) {
+$tahunRaw = $_GET['tahun'] ?? date('Y');
+$bulanRaw = $_GET['bulan'] ?? date('n');
+$tahun = strtolower((string) $tahunRaw) === 'all' ? 'all' : (int) $tahunRaw;
+$bulan = strtolower((string) $bulanRaw) === 'all' ? 'all' : (int) $bulanRaw;
+if ($bulan !== 'all' && ($bulan < 1 || $bulan > 12)) {
     $bulan = (int) date('n');
 }
 
@@ -17,10 +19,10 @@ $db = getDB();
 $q = $db->prepare(
     "SELECT tgl_uang, ket_uang, jenis_uang, jml_uang
      FROM laporan_keuangan
-     WHERE YEAR(tgl_uang) = ? AND MONTH(tgl_uang) = ?
+     WHERE (? = 'all' OR YEAR(tgl_uang) = ?) AND (? = 'all' OR MONTH(tgl_uang) = ?) AND jenis_uang = 'pengeluaran'
      ORDER BY tgl_uang ASC"
 );
-$q->bind_param('ii', $tahun, $bulan);
+$q->bind_param('siss', $tahun, $tahun, $bulan, $bulan);
 $q->execute();
 $res = $q->get_result();
 
@@ -42,15 +44,46 @@ while ($row = $res->fetch_assoc()) {
 }
 $q->close();
 
+$years = [];
+$yearResult = $db->query(
+    "SELECT DISTINCT y FROM (
+       SELECT DISTINCT YEAR(tgl_uang) AS y FROM laporan_keuangan
+       UNION
+       SELECT DISTINCT YEAR(tgl_transaksi) AS y FROM transaksi
+     ) AS all_years ORDER BY y DESC"
+);
+while ($yearRow = $yearResult->fetch_assoc()) {
+    $years[] = (int) $yearRow['y'];
+}
+$yearResult->close();
+
+$months = [];
+$monthStmt = $db->prepare(
+    "SELECT DISTINCT m FROM (
+       SELECT DISTINCT MONTH(tgl_uang) AS m FROM laporan_keuangan WHERE (? = 'all' OR YEAR(tgl_uang) = ?)
+       UNION
+       SELECT DISTINCT MONTH(tgl_transaksi) AS m FROM transaksi WHERE (? = 'all' OR YEAR(tgl_transaksi) = ?)
+     ) AS all_months ORDER BY m ASC"
+);
+$monthStmt->bind_param('siss', $tahun, $tahun, $tahun, $tahun);
+$monthStmt->execute();
+$monthRes = $monthStmt->get_result();
+while ($monthRow = $monthRes->fetch_assoc()) {
+    $months[] = (int) $monthRow['m'];
+}
+$monthStmt->close();
+
 $db->close();
 
 echo json_encode([
-    'success'         => true,
-    'tahun'           => $tahun,
-    'bulan'           => $bulan,
-    'nama_bulan'      => $namaBulan[$bulan] ?? '',
-    'rows'            => $rows,
-    'total_pemasukan' => $masuk,
+    'success'          => true,
+    'tahun'            => $tahun,
+    'bulan'            => $bulan,
+    'nama_bulan'       => $namaBulan[$bulan] ?? '',
+    'rows'             => $rows,
+    'total_pemasukan'  => $masuk,
     'total_pengeluaran'=> $keluar,
-    'saldo'           => $masuk - $keluar,
+    'saldo'            => $masuk - $keluar,
+    'available_years'  => $years,
+    'available_months' => $months,
 ]);
