@@ -154,14 +154,16 @@ Salin Nomor Rekening
 
 <div class="space-y-3">
 
+<input type="hidden" id="idTunggakanSpp" value="">
+
 <div>
 <label class="text-sm text-gray-500">Bulan Tagihan</label>
-<input type="text" value="Juni 2025" class="w-full border px-3 py-2 rounded bg-gray-100" readonly>
+<input id="inputBulanTagihanSpp" type="text" value="-" class="w-full border px-3 py-2 rounded bg-gray-100" readonly>
 </div>
 
 <div>
 <label class="text-sm text-gray-500">Jumlah Pembayaran</label>
-<input type="text" value="Rp 800.001" class="w-full border px-3 py-2 rounded bg-gray-100" readonly>
+<input id="inputJumlahTagihanSpp" type="text" value="Rp 0" class="w-full border px-3 py-2 rounded bg-gray-100" readonly>
 </div>
 
 </div>
@@ -206,12 +208,6 @@ let rek = document.getElementById("noRek").innerText;
 navigator.clipboard.writeText(rek);
 
 alert("Nomor rekening berhasil disalin");
-
-}
-
-function konfirmasiTransfer(){
-
-tutupPopupBayar();
 
 }
 

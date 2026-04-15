@@ -625,6 +625,19 @@
       pct.textContent = (j.progress_pct || 0) + '% pembayaran selesai';
     }
 
+    const idTunEl = document.getElementById('idTunggakanSpp');
+    const inpBulan = document.getElementById('inputBulanTagihanSpp');
+    const inpJml = document.getElementById('inputJumlahTagihanSpp');
+    if (idTunEl && j.siswa && j.siswa.id_tunggakan) {
+      idTunEl.value = j.siswa.id_tunggakan;
+    }
+    if (inpBulan) {
+      inpBulan.value = j.siswa.periode_tagihan || '-';
+    }
+    if (inpJml) {
+      inpJml.value = formatRupiah(j.sisa_tunggakan || 0);
+    }
+
     const tb = document.querySelector('table.w-full.text-sm tbody');
     if (tb) {
       tb.innerHTML = '';
@@ -667,6 +680,27 @@
       });
     }
   }
+
+  window.konfirmasiTransfer = async function () {
+    const id = document.getElementById('idTunggakanSpp')?.value;
+    if (!id) {
+      alert('Data tagihan tidak tersedia.');
+      return;
+    }
+    const fd = new FormData();
+    fd.append('id_tunggakan', id);
+    fd.append('tgl_transaksi', new Date().toISOString().slice(0, 10));
+    const res = await fetch(BASE + 'backend/proses/siswa/konfirmasi_bayar_spp.php', {
+      method: 'POST',
+      body: fd,
+      credentials: 'same-origin',
+    });
+    if (res.ok) {
+      window.location.reload();
+    } else {
+      alert('Gagal mencatat pembayaran SPP.');
+    }
+  };
 
   /* ---------- Tagihan SPP (siswa) — sinkron dengan admin (transaksi → Pembayaran Masuk) ---------- */
   async function initTagihanSpp() {
