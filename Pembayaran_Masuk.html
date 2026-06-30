@@ -23,6 +23,7 @@
       <a href="Tagihan_Bulanan.html" class="block hover:bg-white/20 p-3 rounded-lg">💳 Tagihan Bulanan</a>
       <a href="Pembayaran_Masuk.html" class="block bg-white/20 p-3 rounded-lg">⬆️ Pembayaran Masuk</a>
       <a href="Laporan_Pengeluaran.html" class="block hover:bg-white/20 p-3 rounded-lg">📉 Laporan Pengeluaran</a>
+      <a href="Laporan_Keuangan_Admin.html" class="block hover:bg-white/20 p-3 rounded-lg">📊 Laporan Keuangan Admin</a>
     </nav>
   </aside>
 
@@ -30,12 +31,18 @@
   <main class="flex-1 p-4 md:p-8">
     <!-- Header -->
     <div class="flex justify-between items-center mb-8 mt-8">
-      <h2 class="text-xl font-bold">Pembayaran Masuk</h2>
+      <h2 class="text-xl font-bold rounded-full">Pembayaran Masuk</h2>
       <button class="bg-red-500 text-white px-3 py-1 rounded text-sm">Logout</button>
     </div>
 
     
     <!-- Tabel Pembayaran Masuk -->
+    <div class="flex justify-between mb-4">
+      <button onclick="bukaModalPembayaran()"
+        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+        + Input Pembayaran
+      </button>
+    </div>
     <div class="bg-white shadow rounded-lg p-6">
       <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
@@ -53,10 +60,132 @@
         </table>
       </div>
     </div>
+    <!-- MODAL INPUT PEMBAYARAN -->
+<div id="modalPembayaran"
+  class="fixed inset-0 bg-black/40 hidden justify-center items-center z-50">
 
+  <div class="bg-white w-full max-w-lg p-6 rounded-xl shadow-xl">
+
+    <h3 class="text-lg font-bold mb-4">
+      Input Pembayaran Masuk
+    </h3>
+
+    <div class="space-y-3">
+
+      <div>
+        <label class="text-sm">Nama Siswa</label>
+        <input type="text" id="namaPembayaran"
+          class="w-full border px-3 py-2 rounded">
+      </div>
+
+      <div>
+        <label class="text-sm">Kelas</label>
+        <input type="text" id="kelasPembayaran"
+          class="w-full border px-3 py-2 rounded">
+      </div>
+
+      <div>
+        <label class="text-sm">Tanggal Pembayaran</label>
+        <input type="date" id="tanggalPembayaran"
+          class="w-full border px-3 py-2 rounded">
+      </div>
+
+      <div>
+        <label class="text-sm">Nominal</label>
+        <input type="number" id="nominalPembayaran"
+          class="w-full border px-3 py-2 rounded">
+      </div>
+
+      <div>
+        <label class="text-sm">Keterangan</label>
+        <input type="text" id="keteranganPembayaran"
+          placeholder="SPP Juni 2025"
+          class="w-full border px-3 py-2 rounded">
+      </div>
+
+    </div>
+
+    <div class="flex justify-end gap-3 mt-5">
+
+      <button onclick="tutupModalPembayaran()"
+        class="px-4 py-2 bg-gray-300 rounded">
+        Batal
+      </button>
+
+      <button onclick="simpanPembayaranManual()"
+        class="px-4 py-2 bg-green-600 text-white rounded">
+        Simpan
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
   </main>
 </div>
+<script>
 
+function bukaModalPembayaran(){
+  document.getElementById('modalPembayaran')
+    .classList.remove('hidden');
+
+  document.getElementById('modalPembayaran')
+    .classList.add('flex');
+}
+
+function tutupModalPembayaran(){
+  document.getElementById('modalPembayaran')
+    .classList.add('hidden');
+
+  document.getElementById('modalPembayaran')
+    .classList.remove('flex');
+}
+
+function simpanPembayaranManual(){
+
+  const nama =
+    document.getElementById('namaPembayaran').value;
+
+  const kelas =
+    document.getElementById('kelasPembayaran').value;
+
+  const tanggal =
+    document.getElementById('tanggalPembayaran').value;
+
+  const nominal =
+    document.getElementById('nominalPembayaran').value;
+
+  const keterangan =
+    document.getElementById('keteranganPembayaran').value;
+
+  if(!nama || !kelas || !tanggal || !nominal){
+    alert('Lengkapi data pembayaran');
+    return;
+  }
+
+  const tbody =
+    document.querySelector('tbody');
+
+  const tr = document.createElement('tr');
+
+  tr.innerHTML =
+    '<td class="px-6 py-4">' + nama + '</td>' +
+    '<td class="px-6 py-4">' + kelas + '</td>' +
+    '<td class="px-6 py-4">' + tanggal + '</td>' +
+    '<td class="px-6 py-4">Rp ' +
+    Number(nominal).toLocaleString('id-ID') +
+    '</td>' +
+    '<td class="px-6 py-4">' + keterangan + '</td>';
+
+  tbody.prepend(tr);
+
+  alert('Pembayaran berhasil ditambahkan');
+
+  tutupModalPembayaran();
+}
+
+</script>
 <script src="backend/js/integration.js" defer></script>
 </body>
 </html>

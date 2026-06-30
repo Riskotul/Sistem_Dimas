@@ -254,15 +254,21 @@
     load();
   }
 
-  /* ---------- Tagihan Bulanan ---------- */
+    /* ---------- data siswa ---------- */
   async function initTagihanBulanan() {
     const tbody = document.getElementById('tabelTagihan');
     if (!tbody) return;
 
     let list = [];
     const now = new Date();
-    const bulanTagihanText = now.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
-    const jatuhTempoText = '10 ' + now.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+    const bulanTagihanText = now.toLocaleDateString('id-ID', {
+      month: 'long',
+      year: 'numeric'
+    });
+    const jatuhTempoText = '10 ' + now.toLocaleDateString('id-ID', {
+      month: 'long',
+      year: 'numeric'
+    });
 
     async function load() {
       const j = await apiJson('backend/data/get_siswa.php');
@@ -273,14 +279,47 @@
 
     function renderTable(data) {
       tbody.innerHTML = '';
+
+      // Urutan kelas
+      const urutanKelas = {
+        'X TKJ': 1,
+        'X TSM': 2,
+        'X Perhotelan': 3,
+        'XI TKJ': 4,
+        'XI TSM': 5,
+        'XI Perhotelan': 6,
+        'XII TKJ': 7,
+        'XII TSM': 8,
+        'XII Perhotelan': 9
+      };
+
+      // Sorting kelas dan nama siswa
+      data.sort(function (a, b) {
+
+        const kelasA = urutanKelas[(a.kelas || '').trim()] || 999;
+        const kelasB = urutanKelas[(b.kelas || '').trim()] || 999;
+
+        if (kelasA !== kelasB) {
+          return kelasA - kelasB;
+        }
+
+        return (a.nama_siswa || '')
+          .localeCompare(b.nama_siswa || '');
+      });
+
       data.forEach(function (item) {
+
         const tunggakan = Number(item.jml_tunggakan || 0);
+
         const statusLabel = tunggakan > 0
           ? '<span class="bg-red-100 text-red-600 px-2 py-1 rounded text-xs">Belum Lunas</span>'
           : '<span class="bg-green-100 text-green-600 px-2 py-1 rounded text-xs">Lunas</span>';
+
         const amount = formatRupiah(tunggakan);
+
         const tr = document.createElement('tr');
         tr.className = 'border-b hover:bg-blue-50';
+
         tr.innerHTML =
           '<td class="py-3">' +
           (item.nama_siswa || '') +
@@ -297,18 +336,27 @@
           '<td>' +
           jatuhTempoText +
           '</td>' +
-          '<td>' +
+          '<td class="py-3">' +
           statusLabel +
+          '<div class="mt-2">' +
+          '<button onclick="editStatus(this)" ' +
+          'class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs">' +
+          '✏️ Edit' +
+          '</button>' +
+          '</div>' +
           '</td>';
+
         tbody.appendChild(tr);
       });
     }
 
     window.cariSiswa = function () {
       const keyword = (document.getElementById('searchInput').value || '').toLowerCase();
+
       const hasil = list.filter(function (item) {
         return (item.nama_siswa || '').toLowerCase().includes(keyword);
       });
+
       renderTable(hasil);
     };
 
@@ -325,7 +373,7 @@
     async function load() {
       const j = await apiJson('backend/data/get_siswa.php');
       if (!j || !j.success) return;
-      wrap.innerHTML = '';
+      wrap.innerHTML = '';-
       (j.data || []).forEach(function (s) {
         const tr = document.createElement('tr');
         tr.setAttribute('data-id-siswa', s.id_siswa);

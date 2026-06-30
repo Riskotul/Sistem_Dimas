@@ -1,26 +1,43 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Laporan Keuangan</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tagihan Bulanan Siswa</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+/* Glassmorphism */
+.glass {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+}
+</style>
 </head>
-<body class="bg-gray-100">
 
-<div class="flex min-h-screen">
+<body class="bg-gradient-to-br from-blue-100 to-gray-100 font-sans">
 
-  <!-- Sidebar -->
-  <aside class="w-64 bg-gradient-to-b from-blue-400 to-blue-600 text-white p-6 hidden md:block">
+<div class="min-h-screen flex">
+
+<!-- SIDEBAR -->
+<aside class="w-64 bg-gradient-to-b from-blue-400 to-blue-600 text-white p-6 hidden md:block">
     <img src="asset/Logo SMK.jpg" class="h-28 mx-auto mb-8 rounded-xl bg-white p-2">
 
-    <p class="text-center font-bold">Rusli </p>
-    <p class="text-center text-sm mb-6">Kepala Sekolah</p>
+    <p class="text-center font-bold">Dimas</p>
+    <p class="text-center text-sm mb-6">Bendahara</p>
 
     <nav class="space-y-3 text-sm">
-      <a href="index_kepsek.html" class="block bg-white/20 p-3 rounded-lg">📊 Dashboard</a>
+      <a href="index_admin.html" class="block hover:bg-white/20 p-3 rounded-lg">📊 Dashboard</a>
+      <a href="Data_Siswa.html" class="block hover:bg-white/20 p-3 rounded-lg">👨‍🎓 Data Siswa</a>
+      <a href="Tagihan_Bulanan.html" class="block hover:bg-white/20 p-3 rounded-lg">💳 Tagihan Bulanan</a>
+      <a href="Pembayaran_Masuk.html" class="block hover:bg-white/20 p-3 rounded-lg">⬆️ Pembayaran Masuk</a>
+      <a href="Laporan_Pengeluaran.html" class="block hover:bg-white/20 p-3 rounded-lg">📉 Laporan Pengeluaran</a>
+      <a href="Laporan_Keuangan_Admin.html" class="block bg-white/20 p-3 rounded-lg">📊 Laporan Keuangan </a>
     </nav>
   </aside>
+
 
   <!-- Main Content -->
   <main class="flex-1 p-8">

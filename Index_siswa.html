@@ -162,8 +162,26 @@ Salin Nomor Rekening
 </div>
 
 <div>
-<label class="text-sm text-gray-500">Jumlah Pembayaran</label>
-<input id="inputJumlahTagihanSpp" type="text" value="Rp 0" class="w-full border px-3 py-2 rounded bg-gray-100" readonly>
+<label class="text-sm text-gray-500">Nominal Pembayaran</label>
+<input
+  id="inputJumlahTagihanSpp"
+  type="number"
+  placeholder="Masukkan nominal pembayaran"
+  class="w-full border px-3 py-2 rounded focus:ring focus:ring-blue-300">
+</div>
+
+<div>
+<label class="text-sm text-gray-500">Upload Bukti Transfer</label>
+
+<input
+  type="file"
+  id="buktiTransfer"
+  accept="image/*"
+  class="w-full border px-3 py-2 rounded">
+
+<p id="namaFileBukti" class="text-xs text-gray-500 mt-1">
+Belum ada file dipilih
+</p>
 </div>
 
 </div>
@@ -192,23 +210,59 @@ Saya Sudah Transfer
 const popupBayar = document.getElementById("popupBayarSPP");
 
 function bukaPopupBayar(){
-popupBayar.classList.remove("hidden");
-popupBayar.classList.add("flex");
+  popupBayar.classList.remove("hidden");
+  popupBayar.classList.add("flex");
 }
 
 function tutupPopupBayar(){
-popupBayar.classList.add("hidden");
-popupBayar.classList.remove("flex");
+  popupBayar.classList.add("hidden");
+  popupBayar.classList.remove("flex");
 }
 
 function copyRekening(){
 
-let rek = document.getElementById("noRek").innerText;
+  let rek = document.getElementById("noRek").innerText;
 
-navigator.clipboard.writeText(rek);
+  navigator.clipboard.writeText(rek);
 
-alert("Nomor rekening berhasil disalin");
+  alert("Nomor rekening berhasil disalin");
+}
 
+/* tampilkan nama file */
+document.getElementById("buktiTransfer").addEventListener("change", function(){
+
+  const file = this.files[0];
+
+  document.getElementById("namaFileBukti").innerText =
+    file ? file.name : "Belum ada file dipilih";
+
+});
+
+function konfirmasiTransfer(){
+
+  const nominal =
+    document.getElementById("inputJumlahTagihanSpp").value;
+
+  const bukti =
+    document.getElementById("buktiTransfer").files[0];
+
+  if(!nominal){
+    alert("Masukkan nominal pembayaran terlebih dahulu");
+    return;
+  }
+
+  if(!bukti){
+    alert("Upload bukti transfer terlebih dahulu");
+    return;
+  }
+
+  alert(
+    "Pembayaran berhasil dikonfirmasi\n" +
+    "Nominal: Rp " + Number(nominal).toLocaleString("id-ID") +
+    "\nBukti: " + bukti.name
+  );
+
+  tutupPopupBayar();
 }
 
 </script>
