@@ -1785,7 +1785,8 @@
   window.simpanGenerateMassal = async function () {
     const kelas = document.getElementById('generateKelas')?.value;
     const keterangan = document.getElementById('generateKeterangan')?.value;
-    const nominal = document.getElementById('generateNominal')?.value;
+    const nominalRaw = document.getElementById('generateNominal')?.value;
+    const nominal = nominalRaw ? nominalRaw.replace(/\./g, '') : '';
 
     if (!kelas || !keterangan || !nominal) {
       alert('Lengkapi semua data untuk generate tagihan.');
