@@ -1784,18 +1784,18 @@
 
   window.simpanGenerateMassal = async function () {
     const kelas = document.getElementById('generateKelas')?.value;
-    const jenis = document.getElementById('generateJenis')?.value;
-    const periode = document.getElementById('generatePeriode')?.value;
+    const keterangan = document.getElementById('generateKeterangan')?.value;
+    const nominal = document.getElementById('generateNominal')?.value;
 
-    if (!kelas || !jenis || !periode) {
+    if (!kelas || !keterangan || !nominal) {
       alert('Lengkapi semua data untuk generate tagihan.');
       return;
     }
 
     const fd = new FormData();
     fd.append('kelas', kelas);
-    fd.append('jenis_tagihan', jenis);
-    fd.append('periode_tagihan', periode);
+    fd.append('keterangan', keterangan);
+    fd.append('nominal', nominal);
 
     try {
       const r = await fetch(BASE + 'backend/proses/tagihan/generate_tagihan_massal.php', {

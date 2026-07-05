@@ -141,17 +141,15 @@
         </select>
       </div>
       <div>
-        <label class="text-sm">Jenis Tagihan</label>
-        <select id="generateJenis" class="w-full border px-3 py-2 rounded bg-white">
-          <option value="kegiatan">Kegiatan Akhir Tahun</option>
-        </select>
+        <label class="text-sm">Keterangan Kegiatan</label>
+        <input type="text" id="generateKeterangan" placeholder="Contoh: Kegiatan Akhir Tahun 2026" class="w-full border px-3 py-2 rounded">
       </div>
       <div>
-        <label class="text-sm">Periode / Keterangan</label>
-        <input type="text" id="generatePeriode" placeholder="Contoh: Juli 2026 atau DSP 2026" class="w-full border px-3 py-2 rounded">
+        <label class="text-sm">Nominal Pembayaran</label>
+        <input type="number" id="generateNominal" placeholder="Contoh: 150000" class="w-full border px-3 py-2 rounded">
       </div>
       <div class="text-xs text-blue-600 bg-blue-50 p-2 rounded">
-        Info: Sistem otomatis akan melewatkan siswa yang sudah memiliki tagihan dengan periode ini. Nilai nominal otomatis menyesuaikan aturan SPP tiap kelas.
+        Info: Sistem otomatis akan membuatkan tagihan khusus ini kepada seluruh siswa di kelas yang dipilih.
       </div>
     </div>
     <div class="flex justify-end gap-3 mt-5">
