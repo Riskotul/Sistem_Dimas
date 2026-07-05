@@ -23,7 +23,7 @@
       <a href="Tagihan_Bulanan.html" class="block hover:bg-white/20 p-3 rounded-lg">💳 Tagihan Bulanan</a>
       <a href="Pembayaran_Masuk.html" class="block bg-white/20 p-3 rounded-lg">⬆️ Pembayaran Masuk</a>
       <a href="Laporan_Pengeluaran.html" class="block hover:bg-white/20 p-3 rounded-lg">📉 Laporan Pengeluaran</a>
-      <a href="Laporan_Keuangan_Admin.html" class="block hover:bg-white/20 p-3 rounded-lg">📊 Laporan Keuangan Admin</a>
+      <a href="Laporan_Keuangan_Admin.html" class="block hover:bg-white/20 p-3 rounded-lg">📊 Laporan Keuangan</a>
     </nav>
   </aside>
 
@@ -53,6 +53,7 @@
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nominal</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bukti</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-200 text-sm">
@@ -131,14 +132,15 @@
 
       <div>
         <label class="text-sm">Nama Siswa</label>
-        <input type="text" id="namaPembayaran"
-          class="w-full border px-3 py-2 rounded">
+        <select id="namaPembayaran" class="w-full border px-3 py-2 rounded">
+          <option value="">-- Pilih Siswa --</option>
+        </select>
       </div>
 
       <div>
         <label class="text-sm">Kelas</label>
         <input type="text" id="kelasPembayaran"
-          class="w-full border px-3 py-2 rounded">
+          class="w-full border px-3 py-2 rounded bg-gray-100" readonly>
       </div>
 
       <div>
@@ -149,8 +151,8 @@
 
       <div>
         <label class="text-sm">Nominal</label>
-        <input type="number" id="nominalPembayaran"
-          class="w-full border px-3 py-2 rounded">
+        <input type="text" id="nominalPembayaran"
+          class="w-full border px-3 py-2 rounded format-rupiah">
       </div>
 
       <div>
@@ -225,9 +227,9 @@
 
       <div>
         <label class="text-sm">Nominal</label>
-        <input type="number"
+        <input type="text"
           id="nominalPemasukan"
-          class="w-full border px-3 py-2 rounded">
+          class="w-full border px-3 py-2 rounded format-rupiah">
       </div>
 
       <div>
@@ -255,6 +257,20 @@
 
   </div>
 
+</div>
+
+<!-- Modal Bukti -->
+<div id="modalBukti" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+  <div class="bg-white rounded-lg p-6 w-full max-w-md relative">
+    <button onclick="tutupModalBukti()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-xl font-bold">&times;</button>
+    <h3 class="text-lg font-bold mb-4">Bukti Transfer</h3>
+    <div class="flex justify-center">
+      <img id="imgBukti" src="" alt="Bukti Transfer" class="max-w-full max-h-[70vh] rounded shadow-md object-contain">
+    </div>
+    <div class="mt-4 flex justify-end">
+      <button onclick="tutupModalBukti()" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Tutup</button>
+    </div>
+  </div>
 </div>
 
   </main>
@@ -289,7 +305,7 @@ function simpanPembayaranManual(){
     document.getElementById('tanggalPembayaran').value;
 
   const nominal =
-    document.getElementById('nominalPembayaran').value;
+    document.getElementById('nominalPembayaran').value.replace(/\./g, '');
 
   const keterangan =
     document.getElementById('keteranganPembayaran').value;
@@ -311,7 +327,8 @@ function simpanPembayaranManual(){
     '<td class="px-6 py-4">Rp ' +
     Number(nominal).toLocaleString('id-ID') +
     '</td>' +
-    '<td class="px-6 py-4">' + keterangan + '</td>';
+    '<td class="px-6 py-4">' + keterangan + '</td>' +
+    '<td class="px-6 py-4">-</td>';
 
   tbody.prepend(tr);
 
@@ -350,7 +367,7 @@ function simpanPemasukan(){
     document.getElementById('jenisPemasukan').value;
 
   const nominal =
-    document.getElementById('nominalPemasukan').value;
+    document.getElementById('nominalPemasukan').value.replace(/\./g, '');
 
   const keterangan =
     document.getElementById('keteranganPemasukan').value;
@@ -381,6 +398,22 @@ function simpanPemasukan(){
   alert('Pemasukan berhasil ditambahkan');
 
   tutupModalPemasukan();
+}
+
+function bukaModalBukti(url) {
+  document.getElementById('imgBukti').src = url;
+  const modal = document.getElementById('modalBukti');
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+}
+
+function tutupModalBukti() {
+  const modal = document.getElementById('modalBukti');
+  modal.classList.add('hidden');
+  modal.classList.remove('flex');
+  setTimeout(() => {
+    document.getElementById('imgBukti').src = '';
+  }, 200);
 }
 
 </script>

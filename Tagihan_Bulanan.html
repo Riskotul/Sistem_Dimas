@@ -34,7 +34,7 @@
       <a href="Tagihan_Bulanan.html" class="block bg-white/20 p-3 rounded-lg">💳 Tagihan Bulanan</a>
       <a href="Pembayaran_Masuk.html" class="block hover:bg-white/20 p-3 rounded-lg">⬆️ Pembayaran Masuk</a>
       <a href="Laporan_Pengeluaran.html" class="block hover:bg-white/20 p-3 rounded-lg">📉 Laporan Pengeluaran</a>
-      <a href="Laporan_Keuangan_Admin.html" class="block hover:bg-white/20 p-3 rounded-lg">📊 Laporan Keuangan Admin</a>
+      <a href="Laporan_Keuangan_Admin.html" class="block hover:bg-white/20 p-3 rounded-lg">📊 Laporan Keuangan</a>
     </nav>
   </aside>
 
@@ -53,13 +53,20 @@
 
 </div>
 
-<!-- BUTTON + SEARCH -->
 <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
-
-  <div class="relative w-full md:w-64">
-    <input id="searchInput" onkeyup="cariSiswa()" placeholder="Cari nama siswa..." class="px-4 py-2 rounded-lg border">
+  <div class="flex flex-col md:flex-row gap-4">
+    <button onclick="bukaModalGenerate()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 shadow">+ Generate Tagihan Massal</button>
+    <button onclick="bukaModalTambahSiswa()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 shadow">+ Tagihan Manual</button>
   </div>
-
+  <div class="flex gap-4 w-full md:w-auto">
+    <select id="filterKelas" onchange="cariSiswa()" class="px-4 py-2 rounded-lg border bg-white shadow-sm">
+      <option value="">Semua Kelas</option>
+      <option value="X">Kelas X</option>
+      <option value="XI">Kelas XI</option>
+      <option value="XII">Kelas XII</option>
+    </select>
+    <input id="searchInput" onkeyup="cariSiswa()" placeholder="Cari nama siswa..." class="px-4 py-2 rounded-lg border shadow-sm w-full md:w-64">
+  </div>
 </div>
 
 <!-- TABLE -->
@@ -84,54 +91,97 @@
 
 <!-- MODAL TAMBAH SISWA -->
 <div id="modalTambahSiswa" class="fixed inset-0 bg-black/40 hidden justify-center items-center z-50">
-
-<div class="bg-white w-full max-w-md p-6 rounded-xl shadow-xl">
-
-<h3 class="text-lg font-bold mb-4">Tambah Siswa</h3>
-
-<div class="space-y-3">
-
-<div>
-<label class="text-sm">Nama Siswa</label>
-<input type="text" id="namaSiswa" class="w-full border px-3 py-2 rounded">
+  <div class="bg-white w-full max-w-md p-6 rounded-xl shadow-xl">
+    <h3 class="text-lg font-bold mb-4">Buat Tagihan Manual</h3>
+    <div class="space-y-3">
+      <div>
+        <label class="text-sm">Nama Siswa / NIS</label>
+        <select id="namaSiswa" class="w-full border px-3 py-2 rounded bg-white">
+          <option value="">-- Pilih Siswa --</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-sm">Kelas</label>
+        <input type="text" id="kelasSiswa" class="w-full border px-3 py-2 rounded bg-gray-50" readonly>
+      </div>
+      <div>
+        <label class="text-sm">Jenis Tagihan</label>
+        <select id="jenisTagihanManual" class="w-full border px-3 py-2 rounded bg-white">
+          <option value="kegiatan">Kegiatan Khusus</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-sm">Bulan Tagihan / Periode</label>
+        <input type="text" id="bulanTagihan" placeholder="Contoh: Juni 2025" class="w-full border px-3 py-2 rounded">
+      </div>
+      <div>
+        <label class="text-sm">Jumlah Tagihan</label>
+        <input type="text"  id="jumlahTagihan"  class="format-rupiah w-full border px-3 py-2 rounded">
+      </div>
+    </div>
+    <div class="flex justify-end gap-3 mt-5">
+      <button onclick="closeTambahModal()" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Batal</button>
+      <button onclick="simpanSiswa()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Simpan</button>
+    </div>
+  </div>
 </div>
 
-<div>
-<label class="text-sm">Kelas</label>
-<input type="text" id="kelasSiswa" class="w-full border px-3 py-2 rounded">
-</div>
-
-<div>
-<label class="text-sm">Bulan Tagihan</label>
-<input type="text" id="bulanTagihan" placeholder="Contoh: Juni 2025" class="w-full border px-3 py-2 rounded">
-</div>
-
-<div>
-<label class="text-sm">Jumlah Tagihan</label>
-<input type="number" id="jumlahTagihan" class="w-full border px-3 py-2 rounded">
-</div>
-
-</div>
-
-<div class="flex justify-end gap-3 mt-5">
-
-<button onclick="closeTambahModal()" class="px-4 py-2 bg-gray-300 rounded">
-Batal
-</button>
-
-<button onclick="simpanSiswa()" class="px-4 py-2 bg-blue-600 text-white rounded">
-Simpan
-</button>
-
-</div>
-
-</div>
+<!-- MODAL GENERATE MASSAL -->
+<div id="modalGenerateTagihan" class="fixed inset-0 bg-black/40 hidden justify-center items-center z-50">
+  <div class="bg-white w-full max-w-md p-6 rounded-xl shadow-xl">
+    <h3 class="text-lg font-bold mb-4">Generate Tagihan Massal</h3>
+    <div class="space-y-3">
+      <div>
+        <label class="text-sm">Target Kelas</label>
+        <select id="generateKelas" class="w-full border px-3 py-2 rounded bg-white">
+          <option value="">-- Pilih Kelas --</option>
+          <option value="X">Seluruh Kelas X</option>
+          <option value="XI">Seluruh Kelas XI</option>
+          <option value="XII">Seluruh Kelas XII</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-sm">Jenis Tagihan</label>
+        <select id="generateJenis" class="w-full border px-3 py-2 rounded bg-white">
+          <option value="kegiatan">Kegiatan Akhir Tahun</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-sm">Periode / Keterangan</label>
+        <input type="text" id="generatePeriode" placeholder="Contoh: Juli 2026 atau DSP 2026" class="w-full border px-3 py-2 rounded">
+      </div>
+      <div class="text-xs text-blue-600 bg-blue-50 p-2 rounded">
+        Info: Sistem otomatis akan melewatkan siswa yang sudah memiliki tagihan dengan periode ini. Nilai nominal otomatis menyesuaikan aturan SPP tiap kelas.
+      </div>
+    </div>
+    <div class="flex justify-end gap-3 mt-5">
+      <button onclick="closeModalGenerate()" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Batal</button>
+      <button id="btnSubmitGenerate" onclick="simpanGenerateMassal()" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Generate</button>
+    </div>
+  </div>
 </div>
 
 </main>
 </div>
 
-<script src="backend/js/integration.js" defer></script>
-
+<script src="backend/js/integration.js?v=7" defer></script>
+<script>
+function bukaModalTambahSiswa() {
+  document.getElementById('modalTambahSiswa').classList.remove('hidden');
+  document.getElementById('modalTambahSiswa').classList.add('flex');
+}
+function closeTambahModal() {
+  document.getElementById('modalTambahSiswa').classList.add('hidden');
+  document.getElementById('modalTambahSiswa').classList.remove('flex');
+}
+function bukaModalGenerate() {
+  document.getElementById('modalGenerateTagihan').classList.remove('hidden');
+  document.getElementById('modalGenerateTagihan').classList.add('flex');
+}
+function closeModalGenerate() {
+  document.getElementById('modalGenerateTagihan').classList.add('hidden');
+  document.getElementById('modalGenerateTagihan').classList.remove('flex');
+}
+</script>
 </body>
 </html>

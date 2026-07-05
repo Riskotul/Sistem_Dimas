@@ -8,23 +8,52 @@ header('Content-Type: application/json; charset=utf-8');
 
 $db     = getDB();
 $uid    = (int) getLoggedUser()['id_user'];
-$stmt   = $db->prepare(
-    'SELECT s.id_siswa, s.nama_siswa, s.kelas,
-            IFNULL(t.jml_tunggakan, 0) AS jml_tunggakan,
-            IFNULL(t.periode_tagihan, \'\') AS periode_tagihan,
-            t.tgl_jatuh_tempo,
-            t.id_tunggakan
-     FROM siswa s
-     LEFT JOIN tunggakan t ON s.id_siswa = t.id_siswa
-     WHERE s.id_user = ?'
-);
+$stmt = $db->prepare('SELECT id_siswa, nama_siswa, kelas FROM siswa WHERE id_user = ?');
 $stmt->bind_param('i', $uid);
 $stmt->execute();
-$res  = $stmt->get_result();
-$sis  = $res->fetch_assoc();
+$sis = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 
 $id_siswa = (int) ($sis['id_siswa'] ?? 0);
+$total_tunggakan = 0.0;
+$tunggakan_list = [];
+
+if ($id_siswa) {
+    require_once '../helpers/auto_spp.php';
+    autoGenerateSPP($db, $id_siswa, $sis['nama_siswa'], $sis['kelas']);
+
+    $qt = $db->prepare('SELECT id_tunggakan, jml_tunggakan, jumlah_tagihan_awal, periode_tagihan, tgl_jatuh_tempo FROM tunggakan WHERE id_siswa = ? AND jml_tunggakan > 0 ORDER BY tgl_jatuh_tempo ASC');
+    $qt->bind_param('i', $id_siswa);
+    $qt->execute();
+    $rt = $qt->get_result();
+    while ($row = $rt->fetch_assoc()) {
+        $tunggakan_list[] = $row;
+        $total_tunggakan += (float) $row['jml_tunggakan'];
+    }
+    $qt->close();
+
+    // Ambil juga tagihan kegiatan (DSP, dll)
+    $qk = $db->prepare('SELECT id_tagihan_keg, sisa_tagihan FROM tagihan_kegiatan WHERE id_siswa = ? AND sisa_tagihan > 0');
+    $qk->bind_param('i', $id_siswa);
+    $qk->execute();
+    $rk = $qk->get_result();
+    while ($rowK = $rk->fetch_assoc()) {
+        $total_tunggakan += (float) $rowK['sisa_tagihan'];
+    }
+    $qk->close();
+}
+$sis['jml_tunggakan'] = $total_tunggakan;
+$sis['tunggakan_list'] = $tunggakan_list;
+
+if (count($tunggakan_list) > 0) {
+    $sis['periode_tagihan'] = $tunggakan_list[0]['periode_tagihan'];
+    $sis['tgl_jatuh_tempo'] = $tunggakan_list[0]['tgl_jatuh_tempo'];
+    $sis['id_tunggakan']    = $tunggakan_list[0]['id_tunggakan'];
+} else {
+    $sis['periode_tagihan'] = '';
+    $sis['tgl_jatuh_tempo'] = null;
+    $sis['id_tunggakan']    = null;
+}
 
 $total_bayar = 0.0;
 if ($id_siswa) {

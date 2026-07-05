@@ -5,11 +5,11 @@
 require_once '../../config/database.php';
 require_once '../../helpers/session.php';
 require_once '../../helpers/transaksi_helper.php';
+require_once '../../helpers/upload_helper.php';
 requireRole('siswa');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: ../../../Tagihan_Spp.html');
-    exit;
+    jsonResponse(false, 'Metode tidak valid', [], 405);
 }
 
 $id_tunggakan = (int) ($_POST['id_tunggakan'] ?? 0);
@@ -28,8 +28,7 @@ $stmt->close();
 
 if (!$srow) {
     $db->close();
-    header('Location: ../../../Tagihan_Spp.html?error=Profil+tidak+ditemukan');
-    exit;
+    jsonResponse(false, 'Profil tidak ditemukan', [], 404);
 }
 $id_siswa = (int) $srow['id_siswa'];
 
@@ -41,8 +40,7 @@ if (!$id_tunggakan) {
     $st2->close();
     if (!$r2) {
         $db->close();
-        header('Location: ../../../Tagihan_Spp.html?error=Tidak+ada+tagihan+SPP');
-        exit;
+        jsonResponse(false, 'Tidak ada tagihan SPP', [], 404);
     }
     $id_tunggakan = (int) $r2['id_tunggakan'];
     $jml_max      = (float) $r2['jml_tunggakan'];
@@ -54,27 +52,38 @@ if (!$id_tunggakan) {
     $st2->close();
     if (!$r2) {
         $db->close();
-        header('Location: ../../../Tagihan_Spp.html?error=Tagihan+tidak+valid');
-        exit;
+        jsonResponse(false, 'Tagihan tidak valid', [], 404);
     }
     $jml_max = (float) $r2['jml_tunggakan'];
 }
 
 if ($jml_max <= 0) {
     $db->close();
-    header('Location: ../../../Tagihan_Spp.html?info=SPP+sudah+lunas');
-    exit;
+    jsonResponse(false, 'SPP sudah lunas', [], 400);
 }
 
-$jml_bayar = $jml_input > 0 ? min($jml_input, $jml_max) : $jml_max;
+if ($jml_input > $jml_max) {
+    $db->close();
+    jsonResponse(false, 'Nominal pembayaran tidak boleh lebih besar dari total tagihan', [], 400);
+}
+
+$jml_bayar = $jml_input > 0 ? $jml_input : $jml_max;
+
+$buktiPath = null;
+if (isset($_FILES['bukti_transfer']) && $_FILES['bukti_transfer']['error'] !== UPLOAD_ERR_NO_FILE) {
+    try {
+        $buktiPath = uploadFile($_FILES['bukti_transfer'], 'bukti_transfer');
+    } catch (Exception $e) {
+        $db->close();
+        jsonResponse(false, $e->getMessage(), [], 400);
+    }
+}
 
 try {
-    simpanTransaksiPembayaran($db, $id_siswa, $id_tunggakan, $jml_bayar, $tgl, 'Pembayaran SPP');
+    simpanTransaksiPembayaran($db, $id_siswa, $id_tunggakan, $jml_bayar, $tgl, 'Pembayaran SPP', 'spp', $buktiPath);
 } catch (Throwable $e) {
     $db->close();
-    header('Location: ../../../Tagihan_Spp.html?error=Gagal+menyimpan');
-    exit;
+    jsonResponse(false, $e->getMessage(), [], 400);
 }
 $db->close();
-header('Location: ../../../Tagihan_Spp.html?sukses=Pembayaran+SPP+dicatat');
-exit;
+jsonResponse(true, 'Pembayaran SPP berhasil dikonfirmasi');

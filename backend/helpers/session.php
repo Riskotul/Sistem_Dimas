@@ -1,14 +1,8 @@
 <?php
 
-// Check for tab session ID
-$tabSessionId = $_SERVER['HTTP_X_TAB_SESSION_ID'] ?? null;
+$tabSessionId = $_SERVER['HTTP_X_TAB_SESSION_ID'] ?? $_GET['session_id'] ?? $_POST['session_id'] ?? null;
 if ($tabSessionId) {
-    // Hanya izinkan karakter session ID yang valid: A-Z a-z 0-9 , -
-    $tabSessionId = preg_replace('/[^a-zA-Z0-9,-]/', '', $tabSessionId);
-    if ($tabSessionId !== '') {
-        $tabSessionId = substr($tabSessionId, 0, 64);
-        session_id($tabSessionId);
-    }
+    session_id($tabSessionId);
 }
 
 if (session_status() === PHP_SESSION_NONE) {
@@ -92,6 +86,31 @@ function requireRoleJson($roles) {
         http_response_code(403);
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode(['success' => false, 'error' => 'Akses ditolak']);
+        exit;
+    }
+}
+
+/**
+ * Kirim response JSON dan exit
+ * @param bool $success
+ * @param string $message
+ * @param array $data
+ * @param int $statusCode
+ */
+if (!function_exists('jsonResponse')) {
+    function jsonResponse($success, $message = '', $data = [], $statusCode = 200) {
+        http_response_code($statusCode);
+        header('Content-Type: application/json; charset=utf-8');
+        $response = ['success' => $success];
+        if (!$success) {
+            $response['error'] = $message;
+        } else {
+            $response['message'] = $message;
+        }
+        if (!empty($data)) {
+            $response['data'] = $data;
+        }
+        echo json_encode($response);
         exit;
     }
 }

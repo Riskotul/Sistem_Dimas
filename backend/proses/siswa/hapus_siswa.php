@@ -28,18 +28,47 @@ $ambil->bind_result($id_user);
 $ambil->fetch();
 $ambil->close();
 
-// Hapus siswa (tunggakan terhapus otomatis via ON DELETE CASCADE)
-$stmt = $db->prepare("DELETE FROM siswa WHERE id_siswa = ?");
-$stmt->bind_param("i", $id_siswa);
-$stmt->execute();
-$stmt->close();
+// Gunakan transaction untuk hard delete yang aman
+$db->begin_transaction();
 
-// Hapus juga user terkait
-if ($id_user) {
-    $stmt2 = $db->prepare("DELETE FROM users WHERE id_user = ?");
-    $stmt2->bind_param("i", $id_user);
-    $stmt2->execute();
-    $stmt2->close();
+try {
+    // 1. Hapus dari tabel transaksi
+    $stmt = $db->prepare("DELETE FROM transaksi WHERE id_siswa = ?");
+    $stmt->bind_param("i", $id_siswa);
+    $stmt->execute();
+    $stmt->close();
+
+    // 2. Hapus dari tabel tagihan_kegiatan
+    $stmt = $db->prepare("DELETE FROM tagihan_kegiatan WHERE id_siswa = ?");
+    $stmt->bind_param("i", $id_siswa);
+    $stmt->execute();
+    $stmt->close();
+
+    // 3. Hapus dari tabel tunggakan
+    $stmt = $db->prepare("DELETE FROM tunggakan WHERE id_siswa = ?");
+    $stmt->bind_param("i", $id_siswa);
+    $stmt->execute();
+    $stmt->close();
+
+    // 4. Hapus dari tabel siswa
+    $stmt = $db->prepare("DELETE FROM siswa WHERE id_siswa = ?");
+    $stmt->bind_param("i", $id_siswa);
+    $stmt->execute();
+    $stmt->close();
+
+    // 5. Hapus user terkait (akun login)
+    if ($id_user) {
+        $stmt2 = $db->prepare("DELETE FROM users WHERE id_user = ?");
+        $stmt2->bind_param("i", $id_user);
+        $stmt2->execute();
+        $stmt2->close();
+    }
+
+    $db->commit();
+} catch (Exception $e) {
+    $db->rollback();
+    header('Location: ../../../Data_Siswa.html?error=Gagal+menghapus+data');
+    exit;
 }
 
 $db->close();

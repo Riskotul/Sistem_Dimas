@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,263 +11,258 @@
 
 <body class="bg-gray-100 font-sans">
 
-<div class="min-h-screen flex">
+  <div class="min-h-screen flex">
 
-<!-- SIDEBAR -->
-<aside class="w-64 bg-gradient-to-b from-blue-400 to-blue-600 text-white p-6 hidden md:block">
-  <img src="asset/Logo SMK.jpg" class="h-28 mx-auto mb-8 rounded-xl bg-white p-2">
+    <!-- SIDEBAR -->
+    <aside class="w-64 bg-gradient-to-b from-blue-400 to-blue-600 text-white p-6 hidden md:block">
+      <img src="asset/Logo SMK.jpg" class="h-28 mx-auto mb-8 rounded-xl bg-white p-2">
 
-<p class="text-center font-bold">Nama Siswa</p>
+      <p class="text-center font-bold">Nama Siswa</p>
       <p class="text-center text-sm mb-6">Kelas -</p>
 
-  <nav class="space-y-3 text-sm">
-    <a href="Index_siswa.html" class="block bg-white/20 p-3 rounded-lg">📊 Dashboard</a>
-    <a href="Riwayat_pembayaran.html" class="block hover:bg-white/20 p-3 rounded-lg">📋 Riwayat Pembayaran</a>
-    <a href="Tagihan_Spp.html" class="block hover:bg-white/20 p-3 rounded-lg">💳 Tagihan SPP</a>
-    <a href="Bantuan_Siswa.html" class="block hover:bg-white/20 p-3 rounded-lg">⚙ Bantuan</a>
-  </nav>
-</aside>
+      <nav class="space-y-3 text-sm">
+        <a href="Index_siswa.html" class="block bg-white/20 p-3 rounded-lg">📊 Dashboard</a>
+        <a href="Riwayat_pembayaran.html" class="block hover:bg-white/20 p-3 rounded-lg">📋 Riwayat Pembayaran</a>
+        <a href="Tagihan_Spp.html" class="block hover:bg-white/20 p-3 rounded-lg">💳 Tagihan SPP</a>
+        <a href="Bantuan_Siswa.html" class="block hover:bg-white/20 p-3 rounded-lg">⚙ Bantuan</a>
+      </nav>
+    </aside>
 
-<!-- MAIN -->
-<main class="flex-1 p-6">
+    <!-- MAIN -->
+    <main class="flex-1 p-6">
 
-<!-- HEADER -->
-<div class="flex justify-between items-center mb-6">
-  <h2 class="text-2xl font-bold">Dashboard Pembayaran</h2>
-  <button class="bg-red-500 text-white px-3 py-1 rounded text-sm">Logout</button>
-</div>
+      <!-- HEADER -->
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold">Dashboard Pembayaran</h2>
+        <button class="bg-red-500 text-white px-3 py-1 rounded text-sm">Logout</button>
+      </div>
 
-<!-- STAT CARDS -->
-<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <!-- STAT CARDS -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
 
-  <div class="bg-blue-50 p-5 rounded-xl shadow hover:shadow-lg transition">
-    <p class="text-gray-500">Total Tagihan</p>
-    <h3 class="text-xl font-bold text-blue-600">Rp 800.001</h3>
+        <div class="bg-blue-50 p-5 rounded-xl shadow hover:shadow-lg transition">
+          <p class="text-gray-500">Total Tagihan</p>
+          <h3 class="text-xl font-bold text-blue-600">Rp 800.001</h3>
+        </div>
+
+        <div class="bg-blue-50 p-5 rounded-xl shadow hover:shadow-lg transition">
+          <p class="text-gray-500">Status Pembayaran</p>
+          <h3 class="text-xl font-bold text-red-500">Belum Bayar</h3>
+        </div>
+
+        <div class="bg-blue-50 p-5 rounded-xl shadow hover:shadow-lg transition">
+          <p class="text-gray-500">Jatuh Tempo</p>
+          <h3 class="text-xl font-bold">10 Juni 2025</h3>
+        </div>
+
+        <div class="bg-blue-50 p-5 rounded-xl shadow hover:shadow-lg transition">
+          <p class="text-gray-500">Sisa Tunggakan</p>
+          <h3 class="text-xl font-bold text-green-600">Rp 0</h3>
+        </div>
+
+      </div>
+
+      <!-- PROGRESS -->
+      <div class="bg-white p-6 rounded-xl shadow mb-8">
+        <h3 class="font-bold mb-4">Progress Pembayaran</h3>
+
+        <div class="w-full bg-gray-200 rounded-full h-4 mb-3">
+          <div id="progressBarSPP" class="bg-gradient-to-r from-blue-500 to-green-400 h-4 rounded-full"
+            style="width:60%"></div>
+        </div>
+        <p id="progressLabelSPP" class="text-sm text-gray-500">60% pembayaran selesai</p>
+
+        <div class="mt-4 flex justify-center">
+          <button onclick="bukaPopupBayar()"
+            class="px-8 py-3 bg-gradient-to-r from-blue-600 to-green-500 text-white rounded-full shadow-lg hover:scale-105 transition">
+            Bayar Sekarang
+          </button>
+        </div>
+      </div>
+
+      <!-- GRID -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <!-- CHART -->
+        <div class="bg-white p-6 rounded-xl shadow">
+          <h3 class="font-bold mb-3">Ringkasan Tagihan SPP</h3>
+          <canvas id="chartSPP"></canvas>
+        </div>
+
+        <!-- RIWAYAT TABLE -->
+        <div class="bg-white p-6 rounded-xl shadow">
+          <h3 class="font-bold mb-3">Riwayat Pembayaran Terbaru</h3>
+
+          <table class="w-full text-sm">
+            <thead class="bg-gray-100">
+              <tr>
+                <th class="p-2 text-left">Bulan</th>
+                <th class="p-2 text-left">Tanggal</th>
+                <th class="p-2 text-left">Status</th>
+                <th class="p-2 text-left">Jumlah</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b">
+                <td class="p-2">Mei</td>
+                <td class="p-2">10 Mei 2025</td>
+                <td class="p-2 text-green-600 font-bold">Lunas</td>
+                <td class="p-2">Rp 800.001</td>
+              </tr>
+              <tr class="border-b">
+                <td class="p-2">April</td>
+                <td class="p-2">10 April 2025</td>
+                <td class="p-2 text-green-600 font-bold">Lunas</td>
+                <td class="p-2">Rp 800.001</td>
+              </tr>
+              <tr class="border-b">
+                <td class="p-2">Maret</td>
+                <td class="p-2">10 Maret 2025</td>
+                <td class="p-2 text-green-600 font-bold">Lunas</td>
+                <td class="p-2">Rp 800.001</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+    </main>
   </div>
 
-  <div class="bg-blue-50 p-5 rounded-xl shadow hover:shadow-lg transition">
-    <p class="text-gray-500">Status Pembayaran</p>
-    <h3 class="text-xl font-bold text-red-500">Belum Lunas</h3>
+  <!-- POPUP PEMBAYARAN SPP -->
+  <div id="popupBayarSPP" class="fixed inset-0 bg-black/40 hidden justify-center items-center z-50">
+
+    <div class="bg-white w-full max-w-md p-6 rounded-xl shadow-xl">
+
+      <h2 class="text-xl font-bold mb-4 text-center">Pembayaran SPP</h2>
+
+      <div class="bg-blue-50 p-4 rounded-lg text-center mb-4">
+
+        <p class="text-sm text-gray-500">Transfer ke rekening berikut</p>
+
+        <p class="text-lg font-bold mt-2">SITI CHOIRIYAH</p>
+
+        <p class="text-sm mt-1">Bank BRI</p>
+
+        <p id="noRek" class="text-lg font-bold text-blue-600 mt-2">
+          419701008341538
+        </p>
+
+        <button onclick="copyRekening()" class="mt-2 text-sm text-blue-600 underline">
+          Salin Nomor Rekening
+        </button>
+
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="text-sm text-gray-500">Pilih Tagihan</label>
+          <select id="idTunggakanSpp" class="w-full border px-3 py-2 rounded bg-white focus:ring focus:ring-blue-300">
+            <option value="">- Tidak ada tagihan -</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-sm text-gray-500">Nominal Pembayaran</label>
+          <input id="inputJumlahTagihanSpp" type="text" placeholder="Masukkan nominal pembayaran"
+            class="format-rupiah w-full border px-3 py-2 rounded focus:ring focus:ring-blue-300">
+        </div>
+
+        <div>
+          <label class="text-sm text-gray-500">Upload Bukti Transfer</label>
+
+          <input type="file" id="buktiTransfer" accept="image/*" class="w-full border px-3 py-2 rounded">
+
+          <p id="namaFileBukti" class="text-xs text-gray-500 mt-1">
+            Belum ada file dipilih
+          </p>
+        </div>
+
+      </div>
+
+      <p class="text-xs text-gray-500 mt-3 text-center">
+        Setelah melakukan transfer, klik konfirmasi di bawah.
+      </p>
+
+      <div class="flex gap-3 mt-4">
+
+        <button onclick="tutupPopupBayar()" class="px-4 py-2 bg-gray-300 rounded w-full">
+          Tutup
+        </button>
+
+        <button onclick="konfirmasiTransfer()" class="px-4 py-2 bg-green-600 text-white rounded w-full">
+          Saya Sudah Transfer
+        </button>
+
+      </div>
+
+    </div>
   </div>
 
-  <div class="bg-blue-50 p-5 rounded-xl shadow hover:shadow-lg transition">
-    <p class="text-gray-500">Jatuh Tempo</p>
-    <h3 class="text-xl font-bold">10 Juni 2025</h3>
-  </div>
+  <script>
 
-  <div class="bg-blue-50 p-5 rounded-xl shadow hover:shadow-lg transition">
-    <p class="text-gray-500">Sisa Tunggakan</p>
-    <h3 class="text-xl font-bold text-green-600">Rp 0</h3>
-  </div>
+    const popupBayar = document.getElementById("popupBayarSPP");
 
-</div>
+    function bukaPopupBayar() {
+      popupBayar.classList.remove("hidden");
+      popupBayar.classList.add("flex");
+    }
 
-<!-- PROGRESS -->
-<div class="bg-white p-6 rounded-xl shadow mb-8">
-  <h3 class="font-bold mb-4">Progress Pembayaran</h3>
+    function tutupPopupBayar() {
+      popupBayar.classList.add("hidden");
+      popupBayar.classList.remove("flex");
+    }
 
-  <div class="w-full bg-gray-200 rounded-full h-4 mb-3">
-    <div id="progressBarSPP" class="bg-gradient-to-r from-blue-500 to-green-400 h-4 rounded-full" style="width:60%"></div>
-  </div>
-  <p id="progressLabelSPP" class="text-sm text-gray-500">60% pembayaran selesai</p>
+    function copyRekening() {
 
-  <div class="mt-4 flex justify-center">
-    <button onclick="bukaPopupBayar()" class="px-8 py-3 bg-gradient-to-r from-blue-600 to-green-500 text-white rounded-full shadow-lg hover:scale-105 transition">
-      Bayar Sekarang
-    </button>
-  </div>
-</div>
+      let rek = document.getElementById("noRek").innerText;
 
-<!-- GRID -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      navigator.clipboard.writeText(rek);
 
-<!-- CHART -->
-<div class="bg-white p-6 rounded-xl shadow">
-  <h3 class="font-bold mb-3">Ringkasan Tagihan SPP</h3>
-  <canvas id="chartSPP"></canvas>
-</div>
+      alert("Nomor rekening berhasil disalin");
+    }
 
-<!-- RIWAYAT TABLE -->
-<div class="bg-white p-6 rounded-xl shadow">
-  <h3 class="font-bold mb-3">Riwayat Pembayaran Terbaru</h3>
+    /* tampilkan nama file */
+    document.getElementById("buktiTransfer").addEventListener("change", function () {
 
-  <table class="w-full text-sm">
-    <thead class="bg-gray-100">
-      <tr>
-        <th class="p-2 text-left">Bulan</th>
-        <th class="p-2 text-left">Tanggal</th>
-        <th class="p-2 text-left">Status</th>
-        <th class="p-2 text-left">Jumlah</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr class="border-b">
-        <td class="p-2">Mei</td>
-        <td class="p-2">10 Mei 2025</td>
-        <td class="p-2 text-green-600 font-bold">Lunas</td>
-        <td class="p-2">Rp 800.001</td>
-      </tr>
-      <tr class="border-b">
-        <td class="p-2">April</td>
-        <td class="p-2">10 April 2025</td>
-        <td class="p-2 text-green-600 font-bold">Lunas</td>
-        <td class="p-2">Rp 800.001</td>
-      </tr>
-      <tr class="border-b">
-        <td class="p-2">Maret</td>
-        <td class="p-2">10 Maret 2025</td>
-        <td class="p-2 text-green-600 font-bold">Lunas</td>
-        <td class="p-2">Rp 800.001</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+      const file = this.files[0];
 
-</div>
+      document.getElementById("namaFileBukti").innerText =
+        file ? file.name : "Belum ada file dipilih";
 
-</main>
-</div>
+    });
 
-<!-- POPUP PEMBAYARAN SPP -->
-<div id="popupBayarSPP" class="fixed inset-0 bg-black/40 hidden justify-center items-center z-50">
+    function konfirmasiTransfer() {
 
-<div class="bg-white w-full max-w-md p-6 rounded-xl shadow-xl">
+      const nominal =
+        document.getElementById("inputJumlahTagihanSpp").value;
 
-<h2 class="text-xl font-bold mb-4 text-center">Pembayaran SPP</h2>
+      const bukti =
+        document.getElementById("buktiTransfer").files[0];
 
-<div class="bg-blue-50 p-4 rounded-lg text-center mb-4">
+      if (!nominal) {
+        alert("Masukkan nominal pembayaran terlebih dahulu");
+        return;
+      }
 
-<p class="text-sm text-gray-500">Transfer ke rekening berikut</p>
+      if (!bukti) {
+        alert("Upload bukti transfer terlebih dahulu");
+        return;
+      }
 
-<p class="text-lg font-bold mt-2">SITI CHOIRIYAH</p>
+      alert(
+        "Pembayaran berhasil dikonfirmasi\n" +
+        "Nominal: Rp " + Number(nominal).toLocaleString("id-ID") +
+        "\nBukti: " + bukti.name
+      );
 
-<p class="text-sm mt-1">Bank BRI</p>
+      tutupPopupBayar();
+    }
 
-<p id="noRek" class="text-lg font-bold text-blue-600 mt-2">
-419701008341538
-</p>
-
-<button onclick="copyRekening()" class="mt-2 text-sm text-blue-600 underline">
-Salin Nomor Rekening
-</button>
-
-</div>
-
-<div class="space-y-3">
-
-<input type="hidden" id="idTunggakanSpp" value="">
-
-<div>
-<label class="text-sm text-gray-500">Bulan Tagihan</label>
-<input id="inputBulanTagihanSpp" type="text" value="-" class="w-full border px-3 py-2 rounded bg-gray-100" readonly>
-</div>
-
-<div>
-<label class="text-sm text-gray-500">Nominal Pembayaran</label>
-<input
-  id="inputJumlahTagihanSpp"
-  type="number"
-  placeholder="Masukkan nominal pembayaran"
-  class="w-full border px-3 py-2 rounded focus:ring focus:ring-blue-300">
-</div>
-
-<div>
-<label class="text-sm text-gray-500">Upload Bukti Transfer</label>
-
-<input
-  type="file"
-  id="buktiTransfer"
-  accept="image/*"
-  class="w-full border px-3 py-2 rounded">
-
-<p id="namaFileBukti" class="text-xs text-gray-500 mt-1">
-Belum ada file dipilih
-</p>
-</div>
-
-</div>
-
-<p class="text-xs text-gray-500 mt-3 text-center">
-Setelah melakukan transfer, klik konfirmasi di bawah.
-</p>
-
-<div class="flex gap-3 mt-4">
-
-<button onclick="tutupPopupBayar()" class="px-4 py-2 bg-gray-300 rounded w-full">
-Tutup
-</button>
-
-<button onclick="konfirmasiTransfer()" class="px-4 py-2 bg-green-600 text-white rounded w-full">
-Saya Sudah Transfer
-</button>
-
-</div>
-
-</div>
-</div>
-
-<script>
-
-const popupBayar = document.getElementById("popupBayarSPP");
-
-function bukaPopupBayar(){
-  popupBayar.classList.remove("hidden");
-  popupBayar.classList.add("flex");
-}
-
-function tutupPopupBayar(){
-  popupBayar.classList.add("hidden");
-  popupBayar.classList.remove("flex");
-}
-
-function copyRekening(){
-
-  let rek = document.getElementById("noRek").innerText;
-
-  navigator.clipboard.writeText(rek);
-
-  alert("Nomor rekening berhasil disalin");
-}
-
-/* tampilkan nama file */
-document.getElementById("buktiTransfer").addEventListener("change", function(){
-
-  const file = this.files[0];
-
-  document.getElementById("namaFileBukti").innerText =
-    file ? file.name : "Belum ada file dipilih";
-
-});
-
-function konfirmasiTransfer(){
-
-  const nominal =
-    document.getElementById("inputJumlahTagihanSpp").value;
-
-  const bukti =
-    document.getElementById("buktiTransfer").files[0];
-
-  if(!nominal){
-    alert("Masukkan nominal pembayaran terlebih dahulu");
-    return;
-  }
-
-  if(!bukti){
-    alert("Upload bukti transfer terlebih dahulu");
-    return;
-  }
-
-  alert(
-    "Pembayaran berhasil dikonfirmasi\n" +
-    "Nominal: Rp " + Number(nominal).toLocaleString("id-ID") +
-    "\nBukti: " + bukti.name
-  );
-
-  tutupPopupBayar();
-}
-
-</script>
-<script src="backend/js/integration.js" defer></script>
+  </script>
+  <script src="backend/js/integration.js" defer></script>
 
 </body>
+
 </html>

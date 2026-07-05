@@ -63,6 +63,23 @@
     return 'Rp ' + x.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   }
 
+  function parseRupiah(str) {
+    if (!str) return 0;
+    const cleanStr = String(str).replace(/[^0-9]/g, '');
+    return Number(cleanStr) || 0;
+  }
+
+  document.addEventListener('input', function (e) {
+    if (e.target && e.target.classList.contains('format-rupiah')) {
+      let val = e.target.value.replace(/[^0-9]/g, '');
+      if (val) {
+        e.target.value = new Intl.NumberFormat('id-ID').format(val);
+      } else {
+        e.target.value = '';
+      }
+    }
+  });
+
   function formatTanggalId(tgl) {
     if (!tgl) return '';
     const d = new Date(tgl + (tgl.length <= 10 ? 'T00:00:00' : ''));
@@ -72,8 +89,10 @@
   function wireLogout() {
     document.querySelectorAll('button').forEach(function (b) {
       if ((b.textContent || '').trim() === 'Logout') {
-        b.addEventListener('click', function () {
-          window.location.href = BASE + 'backend/proses/logout.php';
+        b.addEventListener('click', async function () {
+          await apiJson('backend/proses/logout.php');
+          sessionStorage.removeItem('tab_session_id');
+          window.location.href = BASE + 'login.php';
         });
       }
     });
@@ -239,8 +258,8 @@
       }
     };
 
-    window.openEditModal = function () {};
-    window.openDeleteModal = function () {};
+    window.openEditModal = function () { };
+    window.openDeleteModal = function () { };
 
     document.querySelectorAll('.fixed').forEach(function (modal) {
       modal.addEventListener('click', function (e) {
@@ -254,7 +273,7 @@
     load();
   }
 
-    /* ---------- data siswa ---------- */
+  /* ---------- data siswa ---------- */
   async function initTagihanBulanan() {
     const tbody = document.getElementById('tabelTagihan');
     if (!tbody) return;
@@ -265,16 +284,37 @@
       month: 'long',
       year: 'numeric'
     });
-    const jatuhTempoText = '10 ' + now.toLocaleDateString('id-ID', {
+    const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    const jatuhTempoText = lastDayOfMonth + ' ' + now.toLocaleDateString('id-ID', {
       month: 'long',
       year: 'numeric'
     });
 
     async function load() {
-      const j = await apiJson('backend/data/get_siswa.php');
+      const j = await apiJson('backend/data/get_siswa.php?filter=current_month');
       if (!j || !j.success) return;
       list = j.data || [];
       renderTable(list);
+
+      const selSiswa = document.getElementById('namaSiswa');
+      if (selSiswa) {
+        selSiswa.innerHTML = '<option value="">-- Pilih Siswa --</option>';
+        window.siswaBulananMap = {};
+        list.forEach(function (siswa) {
+          window.siswaBulananMap[siswa.nama_siswa] = siswa.kelas;
+          const opt = document.createElement('option');
+          opt.value = siswa.nama_siswa;
+          opt.textContent = siswa.nama_siswa + ' (' + (siswa.nis || '-') + ')';
+          selSiswa.appendChild(opt);
+        });
+
+        selSiswa.addEventListener('change', function () {
+          const kelasInput = document.getElementById('kelasSiswa');
+          if (kelasInput) {
+            kelasInput.value = window.siswaBulananMap[this.value] || '';
+          }
+        });
+      }
     }
 
     function renderTable(data) {
@@ -310,12 +350,30 @@
       data.forEach(function (item) {
 
         const tunggakan = Number(item.jml_tunggakan || 0);
+        const totalRecord = Number(item.total_tagihan_record || 0);
+        const totalAwal = Number(item.total_awal || 0);
 
-        const statusLabel = tunggakan > 0
-          ? '<span class="bg-red-100 text-red-600 px-2 py-1 rounded text-xs">Belum Lunas</span>'
-          : '<span class="bg-green-100 text-green-600 px-2 py-1 rounded text-xs">Lunas</span>';
+        let statusLabel = '';
+        let amountText = '';
+        let bulanText = bulanTagihanText;
+        let jatuhTempo = jatuhTempoText;
 
-        const amount = formatRupiah(tunggakan);
+        if (totalRecord === 0) {
+          statusLabel = '<span class="bg-gray-100 text-gray-500 px-2 py-1 rounded text-xs font-semibold">Belum Ada Tagihan</span>';
+          amountText = '-';
+          bulanText = '-';
+          jatuhTempo = '-';
+        } else if (tunggakan > 0) {
+          if (tunggakan < totalAwal) {
+            statusLabel = '<span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs font-semibold">Cicilan</span>';
+          } else {
+            statusLabel = '<span class="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-semibold">Belum Bayar</span>';
+          }
+          amountText = formatRupiah(tunggakan);
+        } else {
+          statusLabel = '<span class="bg-green-100 text-green-600 px-2 py-1 rounded text-xs font-semibold">Lunas</span>';
+          amountText = formatRupiah(0);
+        }
 
         const tr = document.createElement('tr');
         tr.className = 'border-b hover:bg-blue-50';
@@ -328,22 +386,16 @@
           (item.kelas || '') +
           '</td>' +
           '<td>' +
-          bulanTagihanText +
+          bulanText +
           '</td>' +
           '<td>' +
-          amount +
+          amountText +
           '</td>' +
           '<td>' +
-          jatuhTempoText +
+          jatuhTempo +
           '</td>' +
           '<td class="py-3">' +
           statusLabel +
-          '<div class="mt-2">' +
-          '<button onclick="editStatus(this)" ' +
-          'class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs">' +
-          '✏️ Edit' +
-          '</button>' +
-          '</div>' +
           '</td>';
 
         tbody.appendChild(tr);
@@ -352,9 +404,14 @@
 
     window.cariSiswa = function () {
       const keyword = (document.getElementById('searchInput').value || '').toLowerCase();
+      const selKelas = document.getElementById('filterKelas');
+      const selectedKelas = selKelas ? selKelas.value : '';
 
       const hasil = list.filter(function (item) {
-        return (item.nama_siswa || '').toLowerCase().includes(keyword);
+        const matchKeyword = (item.nama_siswa || '').toLowerCase().includes(keyword);
+        const k = item.kelas || '';
+        const matchKelas = selectedKelas === '' || k.split(' ')[0] === selectedKelas;
+        return matchKeyword && matchKelas;
       });
 
       renderTable(hasil);
@@ -373,31 +430,31 @@
     async function load() {
       const j = await apiJson('backend/data/get_siswa.php');
       if (!j || !j.success) return;
-      wrap.innerHTML = '';-
-      (j.data || []).forEach(function (s) {
-        const tr = document.createElement('tr');
-        tr.setAttribute('data-id-siswa', s.id_siswa);
-        tr.innerHTML =
-          '<td class="px-6 py-4">' +
-          (s.nama_siswa || '') +
-          '</td>' +
-          '<td class="px-6 py-4">' +
-          (s.kelas || '') +
-          '</td>' +
-          '<td class="px-6 py-4">' +
-          (s.nis || '') +
-          '</td>' +
-          '<td class="px-6 py-4">' +
-          (s.email || s.username || '') +
-          '</td>' +
-          '<td class="px-6 py-4 text-right">' +
-          '<button type="button" class="text-sm border border-blue-300 px-3 py-1 rounded hover:bg-gray-100 btn-edit-siswa">Edit</button>' +
-          '</td>';
-        tr.querySelector('.btn-edit-siswa').onclick = function () {
-          openModal(tr);
-        };
-        wrap.appendChild(tr);
-      });
+      wrap.innerHTML = ''; -
+        (j.data || []).forEach(function (s) {
+          const tr = document.createElement('tr');
+          tr.setAttribute('data-id-siswa', s.id_siswa);
+          tr.innerHTML =
+            '<td class="px-6 py-4">' +
+            (s.nama_siswa || '') +
+            '</td>' +
+            '<td class="px-6 py-4">' +
+            (s.kelas || '') +
+            '</td>' +
+            '<td class="px-6 py-4">' +
+            (s.nis || '') +
+            '</td>' +
+            '<td class="px-6 py-4">' +
+            (s.email || s.username || '') +
+            '</td>' +
+            '<td class="px-6 py-4 text-right">' +
+            '<button type="button" class="text-sm border border-blue-300 px-3 py-1 rounded hover:bg-gray-100 btn-edit-siswa">Edit</button>' +
+            '</td>';
+          tr.querySelector('.btn-edit-siswa').onclick = function () {
+            openModal(tr);
+          };
+          wrap.appendChild(tr);
+        });
     }
 
     let currentRow = null;
@@ -468,22 +525,32 @@
     };
 
     window.simpanSiswaBaru = async function () {
+      const nisInput = document.getElementById('nisTambah').value;
       const nama = document.getElementById('namaTambah').value;
       const kelas = document.getElementById('kelasTambah').value;
-      
-      if (!nama || !kelas) {
-        alert('Nama dan kelas harus diisi');
+
+      if (!nisInput || !nama || !kelas) {
+        alert('NIS, Nama, dan kelas harus diisi');
         return;
       }
 
-      // Generate NIS 10 digit
-      const nis = Math.floor(Math.random() * 9000000000) + 1000000000;
-      
+      const nis = nisInput.trim();
+
+      if (nis.length !== 10) {
+        alert('NIS harus berjumlah tepat 10 digit');
+        return;
+      }
+
+      if (!/^\d+$/.test(nis)) {
+        alert('NIS hanya boleh berisi angka');
+        return;
+      }
+
       // Generate email dari nama
       const email = nama.toLowerCase().replace(/\s+/g, '') + '@gmail.com';
 
       // Generate username dari NIS
-      const username = nis.toString();
+      const username = nis;
 
       const fd = new FormData();
       fd.append('nama_siswa', nama);
@@ -492,14 +559,15 @@
       fd.append('email', email);
       fd.append('username', username);
       fd.append('password', 'admin123'); // Default password
-      
+
       const r = await fetch(BASE + 'backend/proses/siswa/tambah_siswa.php', {
         method: 'POST',
         body: fd,
         credentials: 'same-origin',
       });
-      
+
       if (r.ok) {
+        document.getElementById('nisTambah').value = '';
         document.getElementById('namaTambah').value = '';
         document.getElementById('kelasTambah').value = '';
         window.closeTambahModal();
@@ -659,7 +727,7 @@
   function updateDashboardSiswa(j, cards) {
     const s = j.siswa || {};
     cards[0].textContent = formatRupiah(j.total_tagihan);
-    cards[1].textContent = Number(s.jml_tunggakan) > 0 ? 'Belum Lunas' : 'Lunas';
+    cards[1].textContent = Number(s.jml_tunggakan) > 0 ? 'Belum Bayar' : 'Lunas';
     const jt = s.tgl_jatuh_tempo ? formatTanggalId(s.tgl_jatuh_tempo) : '-';
     cards[2].textContent = jt;
     cards[3].textContent = formatRupiah(j.sisa_tunggakan);
@@ -730,23 +798,48 @@
   }
 
   window.konfirmasiTransfer = async function () {
-    const id = document.getElementById('idTunggakanSpp')?.value;
-    if (!id) {
-      alert('Data tagihan tidak tersedia.');
+    const rawVal = document.getElementById('idTunggakanSpp')?.value;
+    const nominal = document.getElementById('inputJumlahTagihanSpp')?.value;
+    const bukti = document.getElementById('buktiTransfer')?.files[0];
+
+    if (!rawVal) {
+      alert('Silakan pilih tagihan terlebih dahulu.');
       return;
     }
+    if (!nominal || Number(nominal) <= 0) {
+      alert('Masukkan nominal pembayaran yang valid.');
+      return;
+    }
+    if (!bukti) {
+      alert('Silakan upload bukti transfer.');
+      return;
+    }
+
+    let endpoint = '';
     const fd = new FormData();
-    fd.append('id_tunggakan', id);
     fd.append('tgl_transaksi', new Date().toISOString().slice(0, 10));
-    const res = await fetch(BASE + 'backend/proses/siswa/konfirmasi_bayar_spp.php', {
+    fd.append('jml_bayar', parseRupiah(nominal));
+    fd.append('bukti_transfer', bukti);
+
+    if (rawVal.startsWith('kegiatan_')) {
+      endpoint = 'backend/proses/siswa/konfirmasi_bayar_kegiatan.php';
+      fd.append('id_tagihan_keg', rawVal.replace('kegiatan_', ''));
+    } else {
+      endpoint = 'backend/proses/siswa/konfirmasi_bayar_spp.php';
+      fd.append('id_tunggakan', rawVal.replace('spp_', ''));
+    }
+
+    const res = await fetch(BASE + endpoint, {
       method: 'POST',
       body: fd,
       credentials: 'same-origin',
     });
     if (res.ok) {
+      alert('Pembayaran berhasil dikonfirmasi.');
       window.location.reload();
     } else {
-      alert('Gagal mencatat pembayaran SPP.');
+      const err = await res.json().catch(() => null);
+      alert('Gagal mencatat pembayaran: ' + (err?.error || 'Pastikan data valid.'));
     }
   };
 
@@ -779,21 +872,31 @@
     }));
 
     if (statusEl) {
-      statusEl.textContent = `${statusMonth} ${unpaid ? 'Belum Lunas' : 'Lunas'}`;
+      statusEl.textContent = `${statusMonth} ${unpaid ? 'Belum Bayar' : 'Lunas'}`;
     }
 
     if (progressEl) {
       progressEl.innerHTML = '';
       const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+      const currentMonth = new Date().getMonth() + 1;
 
       months.forEach(function (label, index) {
         const monthIndex = index + 1;
         const paid = paidMonths.has(monthIndex);
         const item = document.createElement('div');
         const bubble = document.createElement('div');
-        bubble.className =
-          'w-10 h-10 mx-auto flex items-center justify-center rounded-sm text-xs ' +
-          (paid ? 'bg-blue-300 text-white' : 'bg-gray-200 text-gray-400');
+
+        let bubbleClass = 'w-10 h-10 mx-auto flex items-center justify-center rounded-sm text-xs ';
+
+        if (monthIndex === currentMonth) {
+          bubbleClass += 'bg-gradient-to-r from-blue-600 to-green-500 text-white font-semibold';
+        } else if (paid) {
+          bubbleClass += 'bg-blue-300 text-white';
+        } else {
+          bubbleClass += 'bg-gray-200 text-gray-400';
+        }
+
+        bubble.className = bubbleClass;
         bubble.textContent = paid ? '✔' : '-';
         const labelEl = document.createElement('div');
         labelEl.className = 'mt-4 mb-4';
@@ -825,6 +928,12 @@
     if (tbody && keg && keg.success) {
       tbody.innerHTML = '';
       (keg.data || []).forEach(function (row) {
+        const currentMonthNum = new Date().getMonth() + 1;
+        let isKegAkhirTahun = (row.nama_kegiatan || '').toLowerCase() === 'kegiatan akhir tahun';
+        if (isKegAkhirTahun && (currentMonthNum < 1 || currentMonthNum > 4)) {
+            return;
+        }
+
         const lunas = row.status === 'lunas';
         const tr = document.createElement('tr');
         tr.className = 'border-t';
@@ -839,7 +948,7 @@
         td3.className = 'px-6 py-4';
         td3.innerHTML = lunas
           ? '<span class="bg-green-100 text-green-600 px-2 py-1 rounded text-xs font-semibold">Lunas</span>'
-          : '<span class="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-semibold">Belum Lunas</span>';
+          : '<span class="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-semibold">Belum Bayar</span>';
         const td4 = document.createElement('td');
         td4.className = 'px-6 py-4';
         td4.textContent = formatRupiah(row.jumlah);
@@ -890,10 +999,25 @@
     }
 
     window.konfirmasiTransfer = async function () {
+      const rawVal = document.getElementById('idTunggakanSpp').value;
+      if (!rawVal) {
+        alert('Silakan pilih tagihan terlebih dahulu.');
+        return;
+      }
+
+      let endpoint = '';
       const fd = new FormData();
-      fd.append('id_tunggakan', document.getElementById('idTunggakanSpp').value);
       fd.append('tgl_transaksi', new Date().toISOString().slice(0, 10));
-      const r = await fetch(BASE + 'backend/proses/siswa/konfirmasi_bayar_spp.php', {
+
+      if (rawVal.startsWith('kegiatan_')) {
+        endpoint = 'backend/proses/siswa/konfirmasi_bayar_kegiatan.php';
+        fd.append('id_tagihan_keg', rawVal.replace('kegiatan_', ''));
+      } else {
+        endpoint = 'backend/proses/siswa/konfirmasi_bayar_spp.php';
+        fd.append('id_tunggakan', rawVal.replace('spp_', ''));
+      }
+
+      const r = await fetch(BASE + endpoint, {
         method: 'POST',
         body: fd,
         credentials: 'same-origin',
@@ -901,7 +1025,7 @@
       if (r.ok) {
         window.location.reload();
       } else {
-        alert('Gagal mencatat pembayaran SPP. Pastikan masih ada tunggakan dan Anda sudah login.');
+        alert('Gagal mencatat pembayaran. Pastikan data valid.');
       }
     };
 
@@ -999,9 +1123,35 @@
         '</td>' +
         '<td class="px-6 py-4 whitespace-nowrap">' +
         (r.keterangan || '') +
+        '</td>' +
+        '<td class="px-6 py-4 whitespace-nowrap">' +
+        (r.bukti_transfer ? '<button onclick="bukaModalBukti(\'' + BASE + r.bukti_transfer + '\')" class="text-blue-500 underline hover:text-blue-700">Lihat</button>' : '-') +
         '</td>';
       tb.appendChild(tr);
     });
+
+    const selSiswa = document.getElementById('namaPembayaran');
+    if (selSiswa) {
+      const s = await apiJson('backend/data/get_siswa.php');
+      if (s && s.success && s.data) {
+        selSiswa.innerHTML = '<option value="">-- Pilih Siswa --</option>';
+        window.siswaDataMap = {};
+        s.data.forEach(function (siswa) {
+          window.siswaDataMap[siswa.nama_siswa] = siswa.kelas;
+          const opt = document.createElement('option');
+          opt.value = siswa.nama_siswa;
+          opt.textContent = siswa.nama_siswa;
+          selSiswa.appendChild(opt);
+        });
+
+        selSiswa.addEventListener('change', function () {
+          const kelasInput = document.getElementById('kelasPembayaran');
+          if (kelasInput) {
+            kelasInput.value = window.siswaDataMap[this.value] || '';
+          }
+        });
+      }
+    }
   }
 
   /* ---------- Kepsek dashboard ---------- */
@@ -1062,7 +1212,7 @@
           (jPembayaran.data || []).filter(function (item) {
             const d = new Date((item.tgl_transaksi || '') + 'T00:00:00');
             return (yearFilter === null || d.getFullYear() === yearFilter) &&
-                   (monthFilter === null || d.getMonth() + 1 === monthFilter);
+              (monthFilter === null || d.getMonth() + 1 === monthFilter);
           }).map(function (item) {
             totalPemasukan += Number(item.jml_bayar || 0);
             return {
@@ -1080,7 +1230,7 @@
           (jPengeluaran.data || []).filter(function (item) {
             const d = new Date((item.tgl_uang || '') + 'T00:00:00');
             return (yearFilter === null || d.getFullYear() === yearFilter) &&
-                   (monthFilter === null || d.getMonth() + 1 === monthFilter);
+              (monthFilter === null || d.getMonth() + 1 === monthFilter);
           }).map(function (item) {
             totalPengeluaran += Number(item.jml_uang || 0);
             return {
@@ -1098,7 +1248,7 @@
       const elPemasukan = document.getElementById('totalPemasukan');
       const elPengeluaran = document.getElementById('totalPengeluaran');
       const elSaldo = document.getElementById('saldo');
-      
+
       if (elPemasukan) {
         elPemasukan.textContent = formatRupiah(totalPemasukan);
       }
@@ -1213,12 +1363,455 @@
       initBantuan();
     } else if (p === 'Pembayaran_Masuk.html') {
       initPembayaranMasuk();
-    } else if (p === 'index_kepsek.html') {
+    } else if (p === 'index_kepsek.html' || p === 'Laporan_Keuangan_Admin.html') {
       initKepsek();
     }
   });
 
+  function updateTagihanDropdown(j, keg) {
+    const sel = document.getElementById('idTunggakanSpp');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">- Tidak ada tagihan -</option>';
+
+    let adaTagihan = false;
+
+    const currentMonthStr = new Date().toLocaleDateString('id-ID', { month: 'long' });
+    const currentYearStr = new Date().getFullYear().toString();
+    const currentMonthNum = new Date().getMonth() + 1;
+
+    if (j && j.siswa && j.siswa.tunggakan_list) {
+      j.siswa.tunggakan_list.forEach(function (t) {
+        if (Number(t.jml_tunggakan) > 0) {
+          const isThisMonth = t.periode_tagihan && t.periode_tagihan.toLowerCase().includes(currentMonthStr.toLowerCase()) && t.periode_tagihan.includes(currentYearStr);
+          if (isThisMonth) {
+            const opt = document.createElement('option');
+            opt.value = 'spp_' + t.id_tunggakan;
+            let label = t.periode_tagihan || '';
+            if (!label.toLowerCase().startsWith('spp')) label = 'SPP ' + label;
+            opt.textContent = label;
+            opt.dataset.sisa = t.jml_tunggakan;
+            opt.dataset.total = t.jumlah_tagihan_awal || t.jml_tunggakan;
+            sel.appendChild(opt);
+            adaTagihan = true;
+          }
+        }
+      });
+    }
+
+    if (keg && keg.success && keg.data) {
+      keg.data.forEach(function (k) {
+        if (k.status !== 'lunas' && Number(k.jumlah) > 0) {
+          const kelasStr = (j.siswa && j.siswa.kelas) ? j.siswa.kelas.toUpperCase() : '';
+          const isKelasXI_XII = kelasStr.startsWith('XI') || kelasStr.startsWith('XII');
+          
+          let isHidden = false;
+          if (isKelasXI_XII && currentMonthNum === 7 && (k.nama_kegiatan || '').toUpperCase().includes('DSP')) {
+              isHidden = true;
+          }
+          
+          let isKegAkhirTahun = (k.nama_kegiatan || '').trim().toLowerCase() === 'kegiatan akhir tahun';
+          if (isKegAkhirTahun && (currentMonthNum < 1 || currentMonthNum > 4)) {
+              isHidden = true;
+          }
+          
+          if (!isHidden) {
+            const opt = document.createElement('option');
+            opt.value = 'kegiatan_' + k.id_tagihan_keg;
+            opt.textContent = 'Kegiatan ' + (k.nama_kegiatan || '');
+            const sisa = k.sisa_tagihan !== undefined && k.sisa_tagihan !== null ? k.sisa_tagihan : k.jumlah;
+            opt.dataset.sisa = sisa;
+            opt.dataset.total = k.jumlah;
+            sel.appendChild(opt);
+            adaTagihan = true;
+          }
+        }
+      });
+    }
+
+    sel.onchange = function () {
+      const infoTotal = document.getElementById('infoTotalTagihan');
+      const infoSisa = document.getElementById('infoSisaTagihan');
+      const opt = sel.options[sel.selectedIndex];
+      if (opt && opt.value !== '') {
+        if (infoTotal) infoTotal.value = formatRupiah(opt.dataset.total || 0);
+        if (infoSisa) infoSisa.value = formatRupiah(opt.dataset.sisa || 0);
+      } else {
+        if (infoTotal) infoTotal.value = '';
+        if (infoSisa) infoSisa.value = '';
+      }
+    };
+  }
+
+  async function initTagihanSpp() {
+    let j = getCache('dashboard_siswa');
+    let keg = getCache('tagihan_kegiatan');
+
+    const [jServer, kegServer] = await Promise.all([
+      apiJson('backend/data/get_dashboard_siswa.php'),
+      apiJson('backend/data/get_tagihan_kegiatan.php')
+    ]);
+
+    if (jServer && jServer.success) { j = jServer; setCache('dashboard_siswa', j); }
+    if (kegServer && kegServer.success) { keg = kegServer; setCache('tagihan_kegiatan', keg); }
+
+    if (j && keg) {
+      const s = j.siswa || {};
+
+      let totalBulanIni = 0;
+      const currentMonthStr = new Date().toLocaleDateString('id-ID', { month: 'long' });
+      const currentYearStr = new Date().getFullYear().toString();
+      const currentMonthNum = new Date().getMonth() + 1;
+      
+      if (s.tunggakan_list) {
+          s.tunggakan_list.forEach(function(t) {
+              if (t.periode_tagihan && t.periode_tagihan.toLowerCase().includes(currentMonthStr.toLowerCase()) && t.periode_tagihan.includes(currentYearStr)) {
+                  totalBulanIni += Number(t.jml_tunggakan || t.jumlah_tagihan_awal || 0);
+              }
+          });
+      }
+      
+      if (keg && keg.data) {
+          keg.data.forEach(function(row) {
+              const kelasStr = (s.kelas) ? s.kelas.toUpperCase() : '';
+              const isKelasXI_XII = kelasStr.startsWith('XI') || kelasStr.startsWith('XII');
+              
+              let isHidden = false;
+              if (isKelasXI_XII && currentMonthNum === 7 && (row.nama_kegiatan || '').toUpperCase().includes('DSP')) {
+                  isHidden = true;
+              }
+              
+              let isKegAkhirTahun = (row.nama_kegiatan || '').trim().toLowerCase() === 'kegiatan akhir tahun';
+              if (isKegAkhirTahun && (currentMonthNum < 1 || currentMonthNum > 4)) {
+                  isHidden = true;
+              }
+              
+              if (!isHidden) {
+                  const sisa = row.sisa_tagihan !== undefined && row.sisa_tagihan !== null ? row.sisa_tagihan : row.jumlah;
+                  totalBulanIni += Number(sisa);
+              }
+          });
+      }
+
+      const elTotal = document.getElementById('tagihanTotalValue');
+      if (elTotal) elTotal.textContent = formatRupiah(totalBulanIni);
+
+      const elStatus = document.getElementById('tagihanStatusValue');
+      if (elStatus) {
+        if (Number(s.jml_tunggakan) > 0) {
+          elStatus.innerHTML = '<span class="text-red-500">Belum Bayar</span>';
+        } else {
+          elStatus.innerHTML = '<span class="text-green-500">Lunas</span>';
+        }
+      }
+
+      const progressContainer = document.getElementById('progressPembayaran');
+      if (progressContainer) {
+        progressContainer.innerHTML = '';
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
+        const chartData = j.chart_months || {};
+        const currentMonth = new Date().getMonth() + 1;
+        for (let i = 1; i <= 12; i++) {
+          const div = document.createElement('div');
+          const isPaid = chartData[i] > 0;
+          let className = 'rounded py-2 shadow-sm cursor-pointer transition text-center ';
+
+          if (i === currentMonth) {
+            className += 'bg-gradient-to-r from-blue-600 to-green-500 text-white font-semibold hover:opacity-90';
+          } else if (isPaid) {
+            className += 'bg-green-500 text-white font-semibold hover:bg-green-600';
+          } else {
+            className += 'bg-gray-200 text-gray-500 hover:bg-gray-300';
+          }
+
+          div.className = className;
+          div.textContent = months[i - 1];
+          div.onclick = function () {
+            if (typeof window.showMonthProgressDetail === 'function') {
+              window.showMonthProgressDetail(i, months[i - 1], j, isPaid, keg);
+            }
+          };
+          progressContainer.appendChild(div);
+        }
+      }
+
+      updateTagihanDropdown(j, keg);
+
+      const tbody = document.getElementById('tbodyKegiatanSpp');
+      if (tbody && keg.success) {
+        tbody.innerHTML = '';
+        (keg.data || []).forEach(function (row) {
+          const currentMonthNum = new Date().getMonth() + 1;
+          const kelasStr = (j.siswa && j.siswa.kelas) ? j.siswa.kelas.toUpperCase() : '';
+          const isKelasXI_XII = kelasStr.startsWith('XI') || kelasStr.startsWith('XII');
+          
+          if (isKelasXI_XII && currentMonthNum === 7 && (row.nama_kegiatan || '').toUpperCase().includes('DSP')) {
+            return; // Hide DSP in July for Class XI and XII
+          }
+
+          let isKegAkhirTahun = (row.nama_kegiatan || '').trim().toLowerCase() === 'kegiatan akhir tahun';
+          if (isKegAkhirTahun && (currentMonthNum < 1 || currentMonthNum > 4)) {
+            return; // Hide Kegiatan Akhir Tahun if month is not Jan-Apr
+          }
+
+          const lunas = row.status === 'lunas';
+          const cicilan = row.status === 'cicilan';
+
+          let statBadge = '';
+          if (lunas) {
+            statBadge = '<span class="bg-green-100 text-green-600 px-2 py-1 rounded text-xs font-semibold">Lunas</span>';
+          } else if (cicilan) {
+            statBadge = '<span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs font-semibold">Cicilan</span>';
+          } else {
+            statBadge = '<span class="bg-red-100 text-red-600 px-2 py-1 rounded text-xs font-semibold">Belum Bayar</span>';
+          }
+
+          const tr = document.createElement('tr');
+          tr.className = 'border-t hover:bg-gray-50';
+
+          tr.innerHTML =
+            '<td class="px-6 py-4">' + (row.nama_kegiatan || '') + '</td>' +
+            '<td class="px-6 py-4">' + statBadge + '</td>' +
+            '<td class="px-6 py-4">' + formatRupiah(row.sisa_tagihan !== undefined && row.sisa_tagihan !== null ? row.sisa_tagihan : row.jumlah) + '</td>' +
+            '<td class="px-6 py-4">' + (row.tgl_bayar ? formatTanggalId(row.tgl_bayar) : '-') + '</td>';
+
+          tbody.appendChild(tr);
+        });
+      }
+
+      await updateStudentSidebarProfile();
+    }
+  }
+
   async function initBantuan() {
     await updateStudentSidebarProfile();
   }
+
+  window.showMonthProgressDetail = async function (monthNum, monthName, dashData, isPaid, kegData) {
+    let modal = document.getElementById('modalMonthProgress');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'modalMonthProgress';
+      modal.className = 'fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-[100] hidden';
+      modal.innerHTML = `
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden relative m-4 transition-all transform scale-100">
+          <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white px-6 py-4 flex justify-between items-center">
+            <h3 id="mmpTitle" class="text-xl font-bold">Detail Bulan</h3>
+            <button onclick="document.getElementById('modalMonthProgress').classList.add('hidden')" class="text-white hover:text-gray-200 transition focus:outline-none">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="p-6">
+            <div id="mmpStatus" class="mb-5 text-center"></div>
+            
+            <h4 class="font-semibold text-gray-700 mb-2 border-b pb-1">Tagihan/Tunggakan Bulan Ini</h4>
+            <ul id="mmpTunggakanList" class="mb-5 space-y-2"></ul>
+            
+            <h4 class="font-semibold text-gray-700 mb-2 border-b pb-1">Riwayat Pembayaran di Bulan Ini</h4>
+            <ul id="mmpRiwayatList" class="space-y-2 max-h-48 overflow-y-auto"></ul>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    const monthNamesFull = {
+      'Jan': 'Januari', 'Feb': 'Februari', 'Mar': 'Maret', 'Apr': 'April',
+      'Mei': 'Mei', 'Jun': 'Juni', 'Jul': 'Juli', 'Ags': 'Agustus',
+      'Sep': 'September', 'Okt': 'Oktober', 'Nov': 'November', 'Des': 'Desember'
+    };
+    const fullMonthName = monthNamesFull[monthName] || monthName;
+
+    document.getElementById('mmpTitle').textContent = 'Detail ' + fullMonthName;
+
+    const statusEl = document.getElementById('mmpStatus');
+    if (isPaid) {
+      statusEl.innerHTML = '<div class="inline-block px-4 py-1 rounded-full bg-green-100 text-green-700 font-semibold text-sm">Terdapat Transaksi Bulan Ini</div>';
+    } else {
+      statusEl.innerHTML = '<div class="inline-block px-4 py-1 rounded-full bg-gray-100 text-gray-600 font-semibold text-sm">Belum Ada Transaksi</div>';
+    }
+
+    const tList = document.getElementById('mmpTunggakanList');
+    tList.innerHTML = '';
+    let foundTunggakan = false;
+    let hasRealSpp = false;
+    
+    if (dashData && dashData.siswa && dashData.siswa.tunggakan_list) {
+      dashData.siswa.tunggakan_list.forEach(function (t) {
+        if (t.periode_tagihan && t.periode_tagihan.toLowerCase().includes(fullMonthName.toLowerCase())) {
+          foundTunggakan = true;
+          if (t.periode_tagihan.toLowerCase().includes('spp')) hasRealSpp = true;
+          let label = t.periode_tagihan;
+          if (label.toLowerCase().includes('spp')) {
+            label = 'SPP Bulanan';
+          }
+          tList.innerHTML += '<li class="text-sm flex justify-between bg-red-50 p-3 rounded-lg border border-red-100"><span class="font-medium text-red-700">' + label + '</span> <span class="text-gray-800 font-semibold">' + formatRupiah(t.jml_tunggakan) + '</span></li>';
+        }
+      });
+    }
+
+    const kelasStr = (dashData && dashData.siswa && dashData.siswa.kelas) ? dashData.siswa.kelas.toUpperCase() : '';
+    const isKelasXI_XII = kelasStr.startsWith('XI') || kelasStr.startsWith('XII');
+    const isKelasX = kelasStr.startsWith('X') && !isKelasXI_XII; // Ensure X is not XI or XII
+    
+    const isJuli = (fullMonthName.toLowerCase() === 'juli');
+    const isAgustus = (fullMonthName.toLowerCase() === 'agustus');
+    
+    const showKegData = (isKelasXI_XII && isAgustus) || (!isKelasXI_XII && isJuli);
+    const isJanToApr = ['januari', 'februari', 'maret', 'april'].includes(fullMonthName.toLowerCase());
+
+    if (kegData && kegData.success && kegData.data) {
+      kegData.data.forEach(function (k) {
+        let isKegAkhirTahun = (k.nama_kegiatan || '').toLowerCase() === 'kegiatan akhir tahun';
+        let showThisKeg = false;
+        
+        if (isKegAkhirTahun && kelasStr.startsWith('XII') && isJanToApr) {
+            showThisKeg = true;
+        } else if (showKegData && !isKegAkhirTahun) {
+            showThisKeg = true;
+        }
+
+        if (showThisKeg && k.status !== 'lunas') {
+          foundTunggakan = true;
+          const sisa = (k.sisa_tagihan !== undefined && k.sisa_tagihan !== null) ? k.sisa_tagihan : k.jumlah;
+          let namaKeg = (k.nama_kegiatan || 'Tagihan Lainnya');
+          if (k.status === 'cicilan') {
+            namaKeg += ' (Sisa)';
+          }
+          tList.innerHTML += '<li class="text-sm flex justify-between bg-red-50 p-3 rounded-lg border border-red-100"><span class="font-medium text-red-700">' + namaKeg + '</span> <span class="text-gray-800 font-semibold">' + formatRupiah(sisa) + '</span></li>';
+        }
+      });
+    }
+    const hideSpp = isKelasX && isJuli;
+    if (!hideSpp && !hasRealSpp && !isPaid) {
+      foundTunggakan = true;
+      tList.innerHTML += '<li class="text-sm flex justify-between bg-red-50 p-3 rounded-lg border border-red-100"><span class="font-medium text-red-700">SPP Bulanan</span> <span class="text-gray-800 font-semibold">' + formatRupiah(100000) + '</span></li>';
+    }
+    if (!foundTunggakan) {
+      tList.innerHTML = '<li class="text-sm text-gray-500 italic p-3 bg-gray-50 rounded-lg text-center">Tidak ada tunggakan/tagihan di bulan ini.</li>';
+    }
+
+    const rList = document.getElementById('mmpRiwayatList');
+    rList.innerHTML = '<li class="text-sm text-gray-500 text-center py-4">Memuat data...</li>';
+
+    modal.classList.remove('hidden');
+
+    try {
+      const res = await apiJson('backend/data/get_laporan_pembayaran.php');
+      rList.innerHTML = '';
+      let foundRiwayat = false;
+      if (res && res.success && res.data) {
+        res.data.forEach(function (r) {
+          const d = new Date(r.tgl_transaksi);
+          if (d.getMonth() + 1 === monthNum) {
+            foundRiwayat = true;
+            rList.innerHTML += '<li class="text-sm flex flex-col bg-green-50 p-3 rounded-lg border border-green-100 mb-2"><div class="flex justify-between mb-1"><span class="font-semibold text-green-700">' + formatTanggalId(r.tgl_transaksi) + '</span><span class="font-bold text-gray-800">' + formatRupiah(r.jml_bayar) + '</span></div></li>';
+          }
+        });
+      }
+
+      if (kegData && kegData.success && kegData.data) {
+        kegData.data.forEach(function (k) {
+          let isKegAkhirTahun = (k.nama_kegiatan || '').toLowerCase() === 'kegiatan akhir tahun';
+          if (isKegAkhirTahun && kelasStr.startsWith('XII') && ['januari', 'februari', 'maret', 'april'].includes(fullMonthName.toLowerCase())) {
+            if (k.status === 'lunas' || k.status === 'cicilan') {
+              let payMonthNum = 0;
+              if (k.tgl_bayar) {
+                const pd = new Date(k.tgl_bayar);
+                payMonthNum = pd.getMonth() + 1;
+              }
+              if (payMonthNum !== monthNum) {
+                let tgl = k.tgl_bayar ? formatTanggalId(k.tgl_bayar) : '-';
+                let amount = k.jumlah - (k.sisa_tagihan !== undefined && k.sisa_tagihan !== null ? k.sisa_tagihan : 0);
+                if (k.status === 'lunas') amount = k.jumlah;
+                
+                if (amount > 0) {
+                  foundRiwayat = true;
+                  rList.innerHTML += '<li class="text-sm flex flex-col bg-green-50 p-3 rounded-lg border border-green-100 mb-2"><div class="flex justify-between mb-1"><span class="font-semibold text-green-700">' + k.nama_kegiatan + ' (' + tgl + ')</span><span class="font-bold text-gray-800">' + formatRupiah(amount) + '</span></div></li>';
+                }
+              }
+            }
+          }
+        });
+      }
+
+      if (!foundRiwayat) {
+        rList.innerHTML = '<li class="text-sm text-gray-500 italic p-3 bg-gray-50 rounded-lg text-center">Belum ada riwayat pembayaran di bulan ini.</li>';
+      }
+    } catch (e) {
+      rList.innerHTML = '<li class="text-sm text-red-500 text-center p-3">Gagal mengambil riwayat.</li>';
+    }
+  };
+
+  window.simpanSiswa = async function () {
+    const nama = document.getElementById('namaSiswa')?.value;
+    const kelas = document.getElementById('kelasSiswa')?.value;
+    const bulan = document.getElementById('bulanTagihan')?.value;
+    const jenis = document.getElementById('jenisTagihanManual')?.value || 'spp';
+    const jumlahStr = document.getElementById('jumlahTagihan')?.value || '0';
+    const jumlah = jumlahStr.replace(/[^0-9]/g, '');
+
+    if (!nama || !kelas || !bulan || !jumlah) {
+      alert('Lengkapi semua data tagihan manual.');
+      return;
+    }
+
+    const fd = new FormData();
+    fd.append('nama_siswa', nama);
+    fd.append('kelas', kelas);
+    fd.append('periode_tagihan', bulan);
+    fd.append('jenis_tagihan', jenis);
+    fd.append('jumlah_tagihan', jumlah);
+
+    try {
+      const r = await fetch(BASE + 'backend/proses/tagihan/simpan_siswa_tagihan.php', {
+        method: 'POST',
+        body: fd,
+        credentials: 'same-origin',
+      });
+      const data = await r.json().catch(() => null);
+      if (r.ok && data && data.success) {
+        alert('Tagihan manual berhasil disimpan.');
+        window.location.reload();
+      } else {
+        alert(data?.error || 'Gagal menyimpan tagihan manual.');
+      }
+    } catch (e) {
+      alert('Terjadi kesalahan jaringan.');
+    }
+  };
+
+  window.simpanGenerateMassal = async function () {
+    const kelas = document.getElementById('generateKelas')?.value;
+    const jenis = document.getElementById('generateJenis')?.value;
+    const periode = document.getElementById('generatePeriode')?.value;
+
+    if (!kelas || !jenis || !periode) {
+      alert('Lengkapi semua data untuk generate tagihan.');
+      return;
+    }
+
+    const fd = new FormData();
+    fd.append('kelas', kelas);
+    fd.append('jenis_tagihan', jenis);
+    fd.append('periode_tagihan', periode);
+
+    try {
+      const r = await fetch(BASE + 'backend/proses/tagihan/generate_tagihan_massal.php', {
+        method: 'POST',
+        body: fd,
+        credentials: 'same-origin',
+      });
+      const data = await r.json().catch(() => null);
+      if (r.ok && data && data.success) {
+        alert(data.message || 'Tagihan massal berhasil digenerate.');
+        window.location.reload();
+      } else {
+        alert(data?.message || data?.error || 'Gagal menggenerate tagihan massal.');
+      }
+    } catch (e) {
+      alert('Terjadi kesalahan jaringan.');
+    }
+  };
 })();

@@ -27,7 +27,7 @@ if (!$row) {
 $id_siswa = (int) $row['id_siswa'];
 
 $q = $db->prepare(
-    'SELECT id_tagihan_keg, nama_kegiatan, kelas_label, jumlah, status, tgl_bayar, id_transaksi
+    'SELECT id_tagihan_keg, nama_kegiatan, kelas_label, jumlah, sisa_tagihan, status, tgl_bayar, id_transaksi
      FROM tagihan_kegiatan
      WHERE id_siswa = ?
      ORDER BY id_tagihan_keg ASC'

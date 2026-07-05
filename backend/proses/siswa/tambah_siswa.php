@@ -55,17 +55,42 @@ $stmt_siswa->execute();
 $id_siswa = $db->insert_id;
 $stmt_siswa->close();
 
-// Buat record tunggakan awal default SPP
-$defaultTagihan = 100000.00;
-$bulanIndo = ['Jan' => 'Januari', 'Feb' => 'Februari', 'Mar' => 'Maret', 'Apr' => 'April', 'May' => 'Mei', 'Jun' => 'Juni', 'Jul' => 'Juli', 'Aug' => 'Agustus', 'Sep' => 'September', 'Oct' => 'Oktober', 'Nov' => 'November', 'Dec' => 'Desember'];
-$now     = new DateTime();
-$bulanKey = $now->format('M');
-$periodeTagihan = ($bulanIndo[$bulanKey] ?? $now->format('F')) . ' ' . $now->format('Y');
-$tglJatuhTempo = $now->format('Y-m-10');
-$stmt_tngg = $db->prepare("INSERT INTO tunggakan (id_siswa, nama_siswa, jml_tunggakan, periode_tagihan, tgl_jatuh_tempo) VALUES (?, ?, ?, ?, ?)");
-$stmt_tngg->bind_param("isdss", $id_siswa, $nama_siswa, $defaultTagihan, $periodeTagihan, $tglJatuhTempo);
-$stmt_tngg->execute();
-$stmt_tngg->close();
+
+// Buat tagihan awal berdasarkan kelas
+$is_kelas_x = (strpos($kelas, 'X ') === 0) || $kelas === 'X';
+$is_kelas_xi = (strpos($kelas, 'XI ') === 0) || $kelas === 'XI';
+$is_kelas_xii = (strpos($kelas, 'XII ') === 0) || $kelas === 'XII';
+
+// 2. Tagihan Kegiatan/DSP
+$stmt_keg = $db->prepare("INSERT INTO tagihan_kegiatan (id_siswa, nama_kegiatan, jenis_tagihan, kelas_label, jumlah, sisa_tagihan, status) VALUES (?, ?, ?, ?, ?, ?, 'belum_lunas')");
+
+if ($is_kelas_x) {
+    $nama_keg = 'DSP & Biaya Tahunan';
+    $jenis = 'dsp';
+    $jumlah = 2750000;
+    $stmt_keg->bind_param("isssdd", $id_siswa, $nama_keg, $jenis, $kelas, $jumlah, $jumlah);
+    $stmt_keg->execute();
+} elseif ($is_kelas_xi) {
+    $nama_keg = 'DSP Tahunan';
+    $jenis = 'dsp';
+    $jumlah = 1000000;
+    $stmt_keg->bind_param("isssdd", $id_siswa, $nama_keg, $jenis, $kelas, $jumlah, $jumlah);
+    $stmt_keg->execute();
+} elseif ($is_kelas_xii) {
+    $nama_keg = 'DSP Tahunan';
+    $jenis = 'dsp';
+    $jumlah = 1000000;
+    $stmt_keg->bind_param("isssdd", $id_siswa, $nama_keg, $jenis, $kelas, $jumlah, $jumlah);
+    $stmt_keg->execute();
+
+    $nama_keg_akhir = 'Kegiatan Akhir Tahun';
+    $jenis_akhir = 'kegiatan';
+    $jumlah_akhir = 1200000;
+    $stmt_keg->bind_param("isssdd", $id_siswa, $nama_keg_akhir, $jenis_akhir, $kelas, $jumlah_akhir, $jumlah_akhir);
+    $stmt_keg->execute();
+}
+
+$stmt_keg->close();
 
 $db->close();
 header('Location: ../../../Data_Siswa.html?sukses=Siswa+berhasil+ditambahkan');
